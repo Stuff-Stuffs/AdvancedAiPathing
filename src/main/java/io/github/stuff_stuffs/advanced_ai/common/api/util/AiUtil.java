@@ -1,6 +1,17 @@
 package io.github.stuff_stuffs.advanced_ai.common.api.util;
 
 public final class AiUtil {
+    public static int roundToUpPower2(int v) {
+        --v;
+        v |= v >>> 1;
+        v |= v >>> 2;
+        v |= v >>> 4;
+        v |= v >>> 8;
+        v |= v >>> 16;
+        ++v;
+        return v;
+    }
+
     public static <T> void wrappingCopy(final T[] source, final int startIndex, final int endIndex, final T[] target, final int offset) {
         if (startIndex < endIndex) {
             System.arraycopy(source, startIndex, target, offset, endIndex - startIndex);

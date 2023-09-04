@@ -3,16 +3,20 @@ package io.github.stuff_stuffs.advanced_ai.common.api.util;
 import it.unimi.dsi.fastutil.objects.Object2ReferenceOpenHashMap;
 import org.jetbrains.annotations.Nullable;
 
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.VarHandle;
 import java.util.Map;
 import java.util.Set;
 
 public class CopyOnWriteMap<K, V> {
-    private volatile Map<K, V> lookups = new Object2ReferenceOpenHashMap<>();
-    private final Object lock = new Object();
+    private static final VarHandle LOOKUPS_HANDLE;
+    @SuppressWarnings("FieldMayBeFinal")
+    private Map<K, V> lookups = new Object2ReferenceOpenHashMap<>();
 
     @Nullable
     public V get(final K key) {
-        return lookups.get(key);
+        //noinspection unchecked
+        return ((Map<K, V>) LOOKUPS_HANDLE.getAcquire(this)).get(key);
     }
 
     public Set<K> keys() {
@@ -20,20 +24,36 @@ public class CopyOnWriteMap<K, V> {
     }
 
     public V put(final K key, final V value) {
-        synchronized (lock) {
-            final Map<K, V> lookupsCopy = new Object2ReferenceOpenHashMap<>(lookups);
-            final V result = lookupsCopy.put(key, value);
-            lookups = lookupsCopy;
-            return result;
-        }
+        Map<K, V> cur;
+        Map<K, V> copy;
+        V res;
+        do {
+            //noinspection unchecked
+            cur = (Map<K, V>) LOOKUPS_HANDLE.getAcquire(this);
+            copy = new Object2ReferenceOpenHashMap<>(cur);
+            res = copy.put(key, value);
+        } while (LOOKUPS_HANDLE.compareAndExchangeRelease(this, cur, copy) != cur);
+        return res;
     }
 
     public synchronized V remove(final K key) {
-        synchronized (lock) {
-            final Map<K, V> lookupsCopy = new Object2ReferenceOpenHashMap<>(lookups);
-            final V result = lookupsCopy.remove(key);
-            lookups = lookupsCopy;
-            return result;
+        Map<K, V> cur;
+        Map<K, V> copy;
+        V res;
+        do {
+            //noinspection unchecked
+            cur = (Map<K, V>) LOOKUPS_HANDLE.getAcquire(this);
+            copy = new Object2ReferenceOpenHashMap<>(cur);
+            res = copy.remove(key);
+        } while (LOOKUPS_HANDLE.compareAndExchangeRelease(this, cur, copy) != cur);
+        return res;
+    }
+
+    static {
+        try {
+            LOOKUPS_HANDLE = MethodHandles.lookup().findVarHandle(CopyOnWriteMap.class, "lookups", Map.class);
+        } catch (final NoSuchFieldException | IllegalAccessException e) {
+            throw new RuntimeException(e);
         }
     }
 }

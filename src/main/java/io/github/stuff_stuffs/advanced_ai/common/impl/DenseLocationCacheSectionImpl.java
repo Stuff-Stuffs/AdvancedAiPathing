@@ -1,6 +1,7 @@
 package io.github.stuff_stuffs.advanced_ai.common.impl;
 
 import io.github.stuff_stuffs.advanced_ai.common.api.location_caching.LocationCacheSection;
+import io.github.stuff_stuffs.advanced_ai.common.api.util.AiUtil;
 import io.github.stuff_stuffs.advanced_ai.common.api.util.ShapeCache;
 import io.github.stuff_stuffs.advanced_ai.common.api.util.UniverseInfo;
 import io.github.stuff_stuffs.advanced_ai.common.internal.ProcessedLocationClassifier;
@@ -16,14 +17,7 @@ public class DenseLocationCacheSectionImpl<T> implements LocationCacheSection<T>
     public DenseLocationCacheSectionImpl(final long[] modCounts, final ShapeCache cache, final ChunkSectionPos pos, final ProcessedLocationClassifier<T> classifier) {
         this.modCounts = modCounts;
         universeInfo = classifier.delegate.universeInfo();
-        int round = universeInfo.size();
-        --round;
-        round |= round >>> 1;
-        round |= round >>> 2;
-        round |= round >>> 4;
-        round |= round >>> 8;
-        round |= round >>> 16;
-        ++round;
+        final int round = AiUtil.roundToUpPower2(universeInfo.size());
         final int size = 32 - Integer.numberOfLeadingZeros(round);
         bitsPerElement = size;
         elementsPerLong = 64 / size;
