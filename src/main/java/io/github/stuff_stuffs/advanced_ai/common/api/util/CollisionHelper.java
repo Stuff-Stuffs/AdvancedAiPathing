@@ -1,7 +1,6 @@
 package io.github.stuff_stuffs.advanced_ai.common.api.util;
 
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
 import net.minecraft.util.function.BooleanBiFunction;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.MathHelper;
@@ -63,29 +62,22 @@ public final class CollisionHelper {
         final int maxZ = MathHelper.ceil(box.maxZ + zOff);
 
         for (int y = minY; y <= maxY; ++y) {
-            final int yEdge = y == minY | y == maxY ? 1 : 0;
-
             for (int x = minX; x <= maxX; ++x) {
-                final int xEdge = x == minX | x == maxX ? 1 : 0;
-
                 for (int z = minZ; z <= maxZ; ++z) {
-                    final int count = (z == minZ | z == maxZ ? 1 : 0) + xEdge + yEdge;
-                    if (count != 3) {
-                        final BlockState state = world.getBlockState(x, y, z);
-                        if (!state.isAir() && (count != 1 || state.exceedsCube()) && (count != 2 || state.getBlock() == Blocks.MOVING_PISTON)) {
-                            final VoxelShape voxelShape = world.getCollisionShape(x, y, z);
-                            if (voxelShape != EMPTY && !voxelShape.isEmpty()) {
-                                if (voxelShape == FULL_CUBE) {
-                                    final double xBox = (double) x - xOff;
-                                    final double yBox = (double) y - yOff;
-                                    final double zBox = (double) z - zOff;
-                                    if (box.intersects(xBox, yBox, zBox, xBox + 1.0D, yBox + 1.0D, zBox + 1.0D)) {
-                                        return true;
-                                    }
-                                } else {
-                                    if (VoxelShapes.matchesAnywhere(shape, voxelShape, BooleanBiFunction.AND)) {
-                                        return true;
-                                    }
+                    final BlockState state = world.getBlockState(x, y, z);
+                    if (!state.isAir()) {
+                        final VoxelShape voxelShape = world.getCollisionShape(x, y, z);
+                        if (voxelShape != EMPTY && !voxelShape.isEmpty()) {
+                            if (voxelShape == FULL_CUBE) {
+                                final double xBox = (double) x - xOff;
+                                final double yBox = (double) y - yOff;
+                                final double zBox = (double) z - zOff;
+                                if (box.intersects(xBox, yBox, zBox, xBox + 1.0D, yBox + 1.0D, zBox + 1.0D)) {
+                                    return true;
+                                }
+                            } else {
+                                if (VoxelShapes.matchesAnywhere(shape, voxelShape, BooleanBiFunction.AND)) {
+                                    return true;
                                 }
                             }
                         }

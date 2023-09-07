@@ -10,18 +10,17 @@ import it.unimi.dsi.fastutil.HashCommon;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumer;
+import net.minecraft.client.render.WorldRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.ChunkSectionPos;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.shape.BitSetVoxelSet;
-import org.joml.Matrix4f;
 
 public class LocationCacheDebugRenderer implements DebugRenderer<LocationCacheDebugSection> {
     @Override
     public void render(final LocationCacheDebugSection data, final ChunkSectionPos pos, final WorldRenderContext context) {
         final Vec3d cameraPos = context.camera().getPos();
-        if(cameraPos.squaredDistanceTo(pos.getMinPos().toCenterPos()) > 256*256) {
+        if (cameraPos.squaredDistanceTo(pos.getCenterPos().toCenterPos()) > 32 * 32) {
             return;
         }
         final MatrixStack stack = context.matrixStack();
@@ -59,22 +58,13 @@ public class LocationCacheDebugRenderer implements DebugRenderer<LocationCacheDe
         final VertexConsumer vertexConsumer = context.consumers().getBuffer(RenderLayer.getLines());
         int i = 0;
         final int k = LocationClassifier.REGISTRY.getRawId(classifier) + 1;
-        final Matrix4f mat = stack.peek().getPositionMatrix();
         for (final BitSetVoxelSet shape : shapes) {
             i++;
             if (shape == null) {
                 continue;
             }
-            final int color = 0xFF000000 | HashCommon.murmurHash3(HashCommon.murmurHash3(HashCommon.murmurHash3(i) + k) + k);
-            shape.forEachEdge((x1, y1, z1, x2, y2, z2) -> {
-                final int dx = (x2 - x1) * (x2 - x1);
-                final int dy = y2 - y1;
-                final int dz = z2 - z1;
-                final int dist = dx + dy * dy + dz * dz;
-                final float inv = MathHelper.inverseSqrt(dist);
-                vertexConsumer.vertex(mat, x1, y1, z1).color(color).normal(dx * inv, dy * inv, dz * inv).next();
-                vertexConsumer.vertex(mat, x2, y2, z2).color(color).normal(dx * inv, dy * inv, dz * inv).next();
-            }, true);
+            final Vec3d color = Vec3d.unpackRgb(HashCommon.murmurHash3(HashCommon.murmurHash3(HashCommon.murmurHash3(i) + k) + k));
+            shape.forEachBox((x1, y1, z1, x2, y2, z2) -> WorldRenderer.drawBox(stack, vertexConsumer, x1 + 0.125, y1 + 0.125, z1 + 0.125, x2 - 0.125, y2 - 0.125, z2 - 0.125, (float) color.x, (float) color.y, (float) color.z, 1.0F), true);
         }
         stack.pop();
     }

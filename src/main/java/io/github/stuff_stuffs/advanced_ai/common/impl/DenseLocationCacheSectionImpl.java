@@ -55,7 +55,7 @@ public class DenseLocationCacheSectionImpl<T> implements LocationCacheSection<T>
         final int index = packed / elementsPerLong;
         final int subIndex = packed % elementsPerLong * bitsPerElement;
         final int mask = (1 << bitsPerElement) - 1;
-        return universeInfo.fromIndex((int) (this.packed[index] >> subIndex & (long) mask));
+        return universeInfo.fromIndex((int) (this.packed[index] >> subIndex) & mask);
     }
 }
 

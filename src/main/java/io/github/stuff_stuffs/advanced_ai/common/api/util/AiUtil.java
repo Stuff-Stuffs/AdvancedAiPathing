@@ -13,7 +13,7 @@ public final class AiUtil {
     }
 
     public static <T> void wrappingCopy(final T[] source, final int startIndex, final int endIndex, final T[] target, final int offset) {
-        if (startIndex < endIndex) {
+        if (startIndex <= endIndex) {
             System.arraycopy(source, startIndex, target, offset, endIndex - startIndex);
         } else {
             System.arraycopy(source, startIndex, target, offset, source.length - startIndex);
@@ -22,7 +22,7 @@ public final class AiUtil {
     }
 
     public static void wrappingCopy(final short[] source, final int startIndex, final int endIndex, final short[] target, final int offset) {
-        if (startIndex < endIndex) {
+        if (startIndex <= endIndex) {
             System.arraycopy(source, startIndex, target, offset, endIndex - startIndex);
         } else {
             System.arraycopy(source, startIndex, target, offset, source.length - startIndex);

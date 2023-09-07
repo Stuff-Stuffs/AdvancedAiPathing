@@ -11,7 +11,7 @@ public final class ProcessedLocationClassifier<T> {
     public final MethodHandle toIndexHandle;
     public final MethodHandle fromIndexHandle;
 
-    public ProcessedLocationClassifier(final LocationClassifier<T> delegate) throws NoSuchMethodException, IllegalAccessException {
+    public ProcessedLocationClassifier(final LocationClassifier<T> delegate) {
         this.delegate = delegate;
         getHandle = delegate.specialGetHandle();
         toIndexHandle = delegate.universeInfo().toIndexHandle();

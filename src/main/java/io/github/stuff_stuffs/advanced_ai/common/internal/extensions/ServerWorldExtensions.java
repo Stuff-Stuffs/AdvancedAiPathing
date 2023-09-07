@@ -1,8 +1,9 @@
-package io.github.stuff_stuffs.advanced_ai.common.internal;
+package io.github.stuff_stuffs.advanced_ai.common.internal.extensions;
 
 import io.github.stuff_stuffs.advanced_ai.common.api.debug.DebugSectionInfo;
 import io.github.stuff_stuffs.advanced_ai.common.api.debug.DebugSectionType;
 import io.github.stuff_stuffs.advanced_ai.common.api.debug.LocationCacheDebugSection;
+import io.github.stuff_stuffs.advanced_ai.common.internal.AdvancedAi;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ReferenceOpenHashMap;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;

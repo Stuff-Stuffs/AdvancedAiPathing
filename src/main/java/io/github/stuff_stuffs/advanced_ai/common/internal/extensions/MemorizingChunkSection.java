@@ -1,4 +1,4 @@
-package io.github.stuff_stuffs.advanced_ai.common.internal;
+package io.github.stuff_stuffs.advanced_ai.common.internal.extensions;
 
 import net.minecraft.block.BlockState;
 

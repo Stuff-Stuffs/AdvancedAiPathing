@@ -1,6 +1,6 @@
 package io.github.stuff_stuffs.advanced_ai.common.mixin;
 
-import io.github.stuff_stuffs.advanced_ai.common.internal.ServerWorldExtensions;
+import io.github.stuff_stuffs.advanced_ai.common.internal.extensions.ServerWorldExtensions;
 import net.minecraft.block.BlockState;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;

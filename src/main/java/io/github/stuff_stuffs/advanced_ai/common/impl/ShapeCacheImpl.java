@@ -26,6 +26,9 @@ public class ShapeCacheImpl extends ChunkCache implements ShapeCache {
 
     public ShapeCacheImpl(final World world, final BlockPos minPos, final BlockPos maxPos, final int cacheSize) {
         super(world, minPos, maxPos);
+        if ((cacheSize & cacheSize - 1) != 0) {
+            throw new IllegalArgumentException("Cache size must be a power of 2!");
+        }
         cacheMask = cacheSize - 1;
         keys = new long[cacheSize];
         blockStates = new BlockState[cacheSize];
