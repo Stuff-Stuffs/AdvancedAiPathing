@@ -4,11 +4,10 @@ import io.github.stuff_stuffs.advanced_ai.common.api.debug.DebugSectionInfo;
 import io.github.stuff_stuffs.advanced_ai.common.api.debug.DebugSectionType;
 import io.github.stuff_stuffs.advanced_ai.common.api.debug.LocationCacheDebugSection;
 import io.github.stuff_stuffs.advanced_ai.common.api.job.AiJob;
-import io.github.stuff_stuffs.advanced_ai.common.api.job.AiJobHandle;
 import io.github.stuff_stuffs.advanced_ai.common.api.location_caching.LocationCacheSection;
 import io.github.stuff_stuffs.advanced_ai.common.api.location_caching.LocationClassifier;
 import io.github.stuff_stuffs.advanced_ai.common.api.util.ShapeCache;
-import io.github.stuff_stuffs.advanced_ai.common.impl.DenseLocationCacheSectionImpl;
+import io.github.stuff_stuffs.advanced_ai.common.impl.location_cache.DenseLocationCacheSectionImpl;
 import io.github.stuff_stuffs.advanced_ai.common.internal.AdvancedAi;
 import io.github.stuff_stuffs.advanced_ai.common.internal.ProcessedLocationClassifier;
 import io.github.stuff_stuffs.advanced_ai.common.internal.extensions.ChunkSectionExtensions;
@@ -56,6 +55,11 @@ public class LocationCachingJob<T> implements AiJob {
         ((ChunkSectionExtensions) chunk.getSection(yIndex)).advanced_ai$sectionData().put(classifier, section);
         ((ServerWorldExtensions) world).advanced_ai$debug(new DebugSectionInfo<>(new LocationCacheDebugSection(Map.of(classifier, new LocationCacheDebugSection.Entry<>(classifier, section))), pos, DebugSectionType.LOCATION_CACHE_TYPE));
         return true;
+    }
+
+    @Override
+    public void apply(Logger logger) {
+
     }
 
     @Override

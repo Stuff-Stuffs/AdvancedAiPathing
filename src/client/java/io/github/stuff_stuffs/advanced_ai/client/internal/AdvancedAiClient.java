@@ -1,7 +1,6 @@
 package io.github.stuff_stuffs.advanced_ai.client.internal;
 
 import com.mojang.brigadier.Command;
-import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import io.github.stuff_stuffs.advanced_ai.client.api.debug.DebugRenderer;
@@ -10,6 +9,9 @@ import io.github.stuff_stuffs.advanced_ai.client.impl.LocationCacheDebugRenderer
 import io.github.stuff_stuffs.advanced_ai.common.api.debug.DebugSectionInfo;
 import io.github.stuff_stuffs.advanced_ai.common.api.debug.DebugSectionType;
 import io.github.stuff_stuffs.advanced_ai.common.api.location_caching.LocationClassifier;
+import io.github.stuff_stuffs.advanced_ai.common.api.util.CollisionHelper;
+import io.github.stuff_stuffs.advanced_ai.common.api.util.ShapeCache;
+import io.github.stuff_stuffs.advanced_ai.common.internal.AStar;
 import io.github.stuff_stuffs.advanced_ai.common.internal.AdvancedAi;
 import it.unimi.dsi.fastutil.objects.Object2ReferenceOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
@@ -18,16 +20,23 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
-import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.argument.RegistryEntryArgumentType;
+import net.minecraft.particle.DustParticleEffect;
 import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkSectionPos;
+import org.apache.commons.lang3.time.StopWatch;
+import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3f;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.function.ToDoubleFunction;
 
 public class AdvancedAiClient implements ClientModInitializer {
     public static final Map<DebugSectionType<?>, Map<ChunkSectionPos, DebugSectionInfo<?>>> DEBUG_INFOS = new Reference2ReferenceOpenHashMap<>();

@@ -1,4 +1,4 @@
-package io.github.stuff_stuffs.advanced_ai.common.impl;
+package io.github.stuff_stuffs.advanced_ai.common.impl.location_cache;
 
 import io.github.stuff_stuffs.advanced_ai.common.api.location_caching.LocationCacheSection;
 import io.github.stuff_stuffs.advanced_ai.common.api.util.AiUtil;

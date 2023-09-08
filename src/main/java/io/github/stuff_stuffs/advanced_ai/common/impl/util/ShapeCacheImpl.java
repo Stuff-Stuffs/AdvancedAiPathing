@@ -1,6 +1,10 @@
-package io.github.stuff_stuffs.advanced_ai.common.impl;
+package io.github.stuff_stuffs.advanced_ai.common.impl.util;
 
+import io.github.stuff_stuffs.advanced_ai.common.api.location_caching.LocationCacheSection;
+import io.github.stuff_stuffs.advanced_ai.common.api.location_caching.LocationClassifier;
 import io.github.stuff_stuffs.advanced_ai.common.api.util.ShapeCache;
+import io.github.stuff_stuffs.advanced_ai.common.internal.SectionData;
+import io.github.stuff_stuffs.advanced_ai.common.internal.extensions.ChunkSectionExtensions;
 import it.unimi.dsi.fastutil.HashCommon;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -39,6 +43,24 @@ public class ShapeCacheImpl extends ChunkCache implements ShapeCache {
     @Override
     public World getDelegate() {
         return world;
+    }
+
+    @Override
+    public <T> T getLocationCache(final int x, final int y, final int z, final T defRet, final LocationClassifier<T> classifier) {
+        if (isOutOfHeightLimit(y)) {
+            return defRet;
+        }
+        final Chunk chunk = getChunk(x >> 4, z >> 4);
+        if (chunk == null) {
+            return defRet;
+        }
+        final ChunkSection section = chunk.getSection(world.sectionCoordToIndex(y >> 4));
+        final SectionData data = ((ChunkSectionExtensions) section).advanced_ai$sectionData();
+        final LocationCacheSection<T> cacheSection = data.get(classifier);
+        if (cacheSection != null) {
+            return cacheSection.get(x, y, z);
+        }
+        return defRet;
     }
 
     private Chunk getChunk(final int chunkX, final int chunkZ) {

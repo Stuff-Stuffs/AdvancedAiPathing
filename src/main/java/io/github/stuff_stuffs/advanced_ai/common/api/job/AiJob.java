@@ -5,6 +5,8 @@ import org.slf4j.Logger;
 public interface AiJob {
     boolean run(Logger logger);
 
+    void apply(Logger logger);
+
     default void init(final Logger logger) {
     }
 

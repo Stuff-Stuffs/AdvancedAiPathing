@@ -1,16 +1,19 @@
 package io.github.stuff_stuffs.advanced_ai.common.api.util;
 
-import io.github.stuff_stuffs.advanced_ai.common.impl.ShapeCacheImpl;
+import io.github.stuff_stuffs.advanced_ai.common.api.location_caching.LocationClassifier;
+import io.github.stuff_stuffs.advanced_ai.common.impl.util.ShapeCacheImpl;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
+import org.jetbrains.annotations.Nullable;
 
 public interface ShapeCache extends BlockView {
     World getDelegate();
+
+    <T> @Nullable T getLocationCache(int x, int y, int z, T defRet, LocationClassifier<T> classifier);
 
     BlockState getBlockState(int x, int y, int z);
 
@@ -18,8 +21,8 @@ public interface ShapeCache extends BlockView {
 
     Chunk getChunk(int x, int y, int z);
 
-    static ShapeCache create(World world, BlockPos minPos, BlockPos maxPos, int cacheSize) {
-        if (minPos.compareTo(maxPos) >= 0) {
+    static ShapeCache create(final World world, final BlockPos minPos, final BlockPos maxPos, final int cacheSize) {
+        if (minPos.getX() >= maxPos.getX() || minPos.getZ() >= maxPos.getZ()) {
             throw new IllegalArgumentException("Argument minPos must be less than maxPos!");
         } else if ((cacheSize & cacheSize - 1) != 0) {
             throw new IllegalArgumentException("Cache size must be a power of 2!");

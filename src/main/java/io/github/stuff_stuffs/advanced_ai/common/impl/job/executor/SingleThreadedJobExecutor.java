@@ -22,9 +22,9 @@ public class SingleThreadedJobExecutor implements RunnableAiJobExecutor {
 
     @Override
     public Optional<AiJobHandle> enqueue(final AiJob job, final int timeout) {
-        if (queue.size() >= maxWaitingTasks) {
-            return Optional.empty();
-        }
+        //if (queue.size() >= maxWaitingTasks) {
+        //    return Optional.empty();
+        //}
         final HandleImpl handle = new HandleImpl();
         job.init(logger);
         queue.add(new HandleJobPair(handle, job, timeout >= 0 ? ticks + timeout : -1));
@@ -37,11 +37,11 @@ public class SingleThreadedJobExecutor implements RunnableAiJobExecutor {
         final boolean infoEnabled = logger.isInfoEnabled();
         while (!queue.isEmpty()) {
             final HandleJobPair peek = queue.peek();
-            if (peek.timeout < ticks) {
+            if (peek.timeout != -1 & peek.timeout < ticks) {
+                peek.handle.kill();
+                peek.job.timeout(logger);
                 queue.poll();
-                continue;
-            }
-            if (!peek.handle.alive()) {
+            } else if (!peek.handle.alive()) {
                 peek.job.cancel(logger);
                 queue.poll();
             } else {
@@ -51,6 +51,7 @@ public class SingleThreadedJobExecutor implements RunnableAiJobExecutor {
                 }
                 if (peek.job.run(logger)) {
                     peek.handle.kill();
+                    peek.job.apply(logger);
                     queue.poll();
                 }
                 final long currentTime = System.currentTimeMillis();
