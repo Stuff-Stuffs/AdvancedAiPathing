@@ -58,7 +58,7 @@ public class LocationCachingJob<T> implements AiJob {
 
     @Override
     public void apply(final Logger logger) {
-        if (!world.isChunkLoaded(pos.getSectionX(), pos.getSectionZ())) {
+        if (section == null || !world.isChunkLoaded(pos.getSectionX(), pos.getSectionZ())) {
             return;
         }
         final Chunk chunk = world.getChunk(pos.getSectionX(), pos.getSectionZ(), ChunkStatus.FULL, false);

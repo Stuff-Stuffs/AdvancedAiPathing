@@ -43,7 +43,7 @@ public class ChunkSectionRegionsImpl implements ChunkSectionRegions {
             final int[] packed = buf.readIntArray();
             final short[] shorts = new short[size];
             for (int j = 0; j < size; j++) {
-                shorts[j] = (short) (packed[j / 2] >>> ((j & 1) == 1 ? 16 : 0));
+                shorts[j] = (short) ((packed[j / 2] >>> ((j & 1) == 1 ? 16 : 0)) & 0xFFF);
             }
             regions[i] = new ChunkSectionRegionImpl(prefix | i, shorts);
         }

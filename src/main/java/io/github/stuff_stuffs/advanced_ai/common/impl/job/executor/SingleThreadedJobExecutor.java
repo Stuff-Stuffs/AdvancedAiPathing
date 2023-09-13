@@ -2,82 +2,104 @@ package io.github.stuff_stuffs.advanced_ai.common.impl.job.executor;
 
 import io.github.stuff_stuffs.advanced_ai.common.api.job.AiJob;
 import io.github.stuff_stuffs.advanced_ai.common.api.job.AiJobHandle;
+import io.github.stuff_stuffs.advanced_ai.common.api.job.AiJobHandler;
 import io.github.stuff_stuffs.advanced_ai.common.internal.RunnableAiJobExecutor;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
-import java.util.ArrayDeque;
-import java.util.Optional;
+import java.util.*;
 
 public class SingleThreadedJobExecutor implements RunnableAiJobExecutor {
-    private final int maxWaitingTasks;
-    private final ArrayDeque<HandleJobPair> queue;
     private final Logger logger;
-    private long ticks = 0;
+    private final List<AiJobHandler> handlers;
+    private final List<AiJobHandler> executionOrder;
+    private final int maxWaitingTasks;
+    private final ArrayDeque<HandleJobPair> jobs;
 
-    public SingleThreadedJobExecutor(final int maxWaitingTasks, final Logger logger) {
+    public SingleThreadedJobExecutor(final List<AiJobHandler> handlers, final Logger logger, final int maxWaitingTasks) {
+        this.handlers = handlers;
+        executionOrder = new ArrayList<>(handlers);
         this.maxWaitingTasks = maxWaitingTasks;
-        queue = new ArrayDeque<>(maxWaitingTasks);
+        jobs = new ArrayDeque<>(maxWaitingTasks);
+        Collections.reverse(executionOrder);
         this.logger = logger;
     }
 
     @Override
-    public Optional<AiJobHandle> enqueue(final AiJob job, final int timeout) {
-        //if (queue.size() >= maxWaitingTasks) {
-        //    return Optional.empty();
-        //}
-        final HandleImpl handle = new HandleImpl();
-        job.init(logger);
-        queue.add(new HandleJobPair(handle, job, timeout >= 0 ? ticks + timeout : -1));
-        return Optional.of(handle);
+    public Optional<AiJobHandle> enqueue(final AiJob job) {
+        return enqueue(job, null);
+    }
+
+    private Optional<AiJobHandle> enqueue(final AiJob job, final @Nullable AiJobHandler producer) {
+        for (final AiJobHandler handler : handlers) {
+            if (handler == producer) {
+                continue;
+            }
+            final Optional<AiJobHandle> accepted = handler.accept(job);
+            if (accepted.isPresent()) {
+                return accepted;
+            }
+        }
+        if (jobs.size() < maxWaitingTasks) {
+            final HandleImpl handle = new HandleImpl();
+            final HandleJobPair pair = new HandleJobPair(handle, job);
+            jobs.add(pair);
+            return Optional.of(handle);
+        }
+        return Optional.empty();
     }
 
     @Override
     public void run(final int millis) {
+        for (final AiJobHandler handler : handlers) {
+            handler.tick();
+        }
         final long startTime = System.currentTimeMillis();
         final boolean infoEnabled = logger.isInfoEnabled();
-        while (!queue.isEmpty()) {
-            final HandleJobPair peek = queue.peek();
-            if (peek.timeout != -1 & peek.timeout < ticks) {
-                peek.handle.kill();
-                peek.job.timeout(logger);
-                queue.poll();
-            } else if (!peek.handle.alive()) {
-                peek.job.cancel(logger);
-                queue.poll();
-            } else {
+        while (true) {
+            while (!jobs.isEmpty()) {
+                final HandleJobPair pair = jobs.peekFirst();
+                final AiJobHandle handle = pair.handle;
+                final AiJob job = pair.job;
                 long l = 0;
                 if (infoEnabled) {
                     l = System.currentTimeMillis();
                 }
-                if (peek.job.run(logger)) {
-                    peek.handle.kill();
-                    peek.job.apply(logger);
-                    queue.poll();
+                if (job.run(logger)) {
+                    handle.kill();
+                    job.apply(logger);
+                    jobs.removeFirst();
                 }
                 final long currentTime = System.currentTimeMillis();
                 if (infoEnabled) {
-                    logger.info("Spent {} milliseconds on task {}", currentTime - l, peek.job.debugData());
+                    logger.info("Spent {} milliseconds on task {}", currentTime - l, job.debugData());
                 }
-                if (currentTime - startTime > millis) {
+            }
+            if (System.currentTimeMillis() - startTime > millis) {
+                return;
+            }
+            if (jobs.isEmpty()) {
+                final DelegatingHandleImpl handle = new DelegatingHandleImpl();
+                for (final AiJobHandler handler : executionOrder) {
+                    final AiJob job = handler.produceWork(handle);
+                    if (job != null) {
+                        final Optional<AiJobHandle> enqueue = enqueue(job, handler);
+                        if (enqueue.isEmpty()) {
+                            job.cancel(logger);
+                        } else {
+                            handle.delegate = enqueue.get();
+                        }
+                    }
+                }
+                if(jobs.isEmpty()) {
                     return;
                 }
             }
         }
-        ticks++;
     }
 
     @Override
     public void stop() {
-        while (!queue.isEmpty()) {
-            final HandleJobPair jobPair = queue.poll();
-            if (jobPair.handle.alive()) {
-                jobPair.handle.kill();
-                jobPair.job.onServerStop(logger);
-            }
-        }
-    }
-
-    private record HandleJobPair(AiJobHandle handle, AiJob job, long timeout) {
     }
 
     private static final class HandleImpl implements AiJobHandle {
@@ -92,5 +114,26 @@ public class SingleThreadedJobExecutor implements RunnableAiJobExecutor {
         public void kill() {
             alive = false;
         }
+    }
+
+    private static final class DelegatingHandleImpl implements AiJobHandle {
+        private boolean alive = true;
+        private AiJobHandle delegate;
+
+        @Override
+        public boolean alive() {
+            return delegate != null ? delegate.alive() : alive;
+        }
+
+        @Override
+        public void kill() {
+            alive = false;
+            if (delegate != null) {
+                delegate.kill();
+            }
+        }
+    }
+
+    private record HandleJobPair(AiJobHandle handle, AiJob job) {
     }
 }

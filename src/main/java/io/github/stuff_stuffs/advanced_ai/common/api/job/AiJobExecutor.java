@@ -1,11 +1,22 @@
 package io.github.stuff_stuffs.advanced_ai.common.api.job;
 
+import net.fabricmc.fabric.api.event.Event;
+import net.fabricmc.fabric.api.event.EventFactory;
+
 import java.util.Optional;
+import java.util.function.Consumer;
 
 public interface AiJobExecutor {
-    Optional<AiJobHandle> enqueue(AiJob job, int timeout);
+    Event<CreationEvent> CREATION_EVENT = EventFactory.createArrayBacked(CreationEvent.class, events -> acceptor -> {
+        for (final CreationEvent event : events) {
+            event.addHandlers(acceptor);
+        }
+    });
 
-    default Optional<AiJobHandle> enqueue(final AiJob job) {
-        return enqueue(job, -1);
+
+    Optional<AiJobHandle> enqueue(final AiJob job);
+
+    interface CreationEvent {
+        void addHandlers(Consumer<AiJobHandler> acceptor);
     }
 }

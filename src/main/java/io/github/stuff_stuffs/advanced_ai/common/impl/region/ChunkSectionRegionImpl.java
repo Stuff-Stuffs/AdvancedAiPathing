@@ -39,8 +39,8 @@ public class ChunkSectionRegionImpl implements ChunkSectionRegion, PackedList {
         }
         int from = 0;
         final long[] arr = set;
-        int to = arr.length - 1;
-        while (from < to) {
+        int to = rem == 0 ? arr.length - 1 : arr.length - 2;
+        while (from <= to) {
             final int mid = (from + to) >>> 1;
             final long midVal = arr[mid];
             if ((midVal & 0xFFF) > s) {

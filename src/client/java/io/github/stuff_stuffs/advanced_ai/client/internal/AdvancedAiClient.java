@@ -6,6 +6,7 @@ import io.github.stuff_stuffs.advanced_ai.client.api.debug.DebugRenderer;
 import io.github.stuff_stuffs.advanced_ai.client.api.debug.DebugRendererRegistry;
 import io.github.stuff_stuffs.advanced_ai.client.impl.ChunkRegionDebugRenderer;
 import io.github.stuff_stuffs.advanced_ai.client.impl.LocationCacheDebugRenderer;
+import io.github.stuff_stuffs.advanced_ai.client.impl.RegionLinksDebugRenderer;
 import io.github.stuff_stuffs.advanced_ai.common.api.debug.DebugSectionInfo;
 import io.github.stuff_stuffs.advanced_ai.common.api.debug.DebugSectionType;
 import io.github.stuff_stuffs.advanced_ai.common.api.location_caching.LocationClassifier;
@@ -33,6 +34,7 @@ public class AdvancedAiClient implements ClientModInitializer {
     public static final Map<DebugSectionType<?>, Map<ChunkSectionPos, DebugSectionInfo<?>>> DEBUG_INFOS = new Reference2ReferenceOpenHashMap<>();
     private static final Set<LocationClassifier<?>> DEBUG_VISIBLE = new ObjectOpenHashSet<>();
     private static @Nullable ChunkRegionifier<?> DEBUG_VISIBLE_REGION = null;
+    private static @Nullable ChunkRegionifier<?> DEBUG_VISIBLE_REGION_LINKS = null;
 
     @Override
     public void onInitializeClient() {
@@ -50,6 +52,7 @@ public class AdvancedAiClient implements ClientModInitializer {
         });
         DebugRendererRegistry.register(DebugSectionType.LOCATION_CACHE_TYPE, new LocationCacheDebugRenderer());
         DebugRendererRegistry.register(DebugSectionType.REGION_DEBUG_TYPE, new ChunkRegionDebugRenderer());
+        DebugRendererRegistry.register(DebugSectionType.REGION_LINKS_DEBUG_TYPE, new RegionLinksDebugRenderer());
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
             final RequiredArgumentBuilder<FabricClientCommandSource, RegistryEntry.Reference<LocationClassifier<?>>> classifierArg = ClientCommandManager.argument("type", RegistryEntryArgumentType.registryEntry(registryAccess, LocationClassifier.REGISTRY_KEY));
             final RequiredArgumentBuilder<FabricClientCommandSource, AddRemoveArgumentType.Op> addRemoveArg = ClientCommandManager.argument("add/remove", AddRemoveArgumentType.ARGUMENT_TYPE);
@@ -78,6 +81,16 @@ public class AdvancedAiClient implements ClientModInitializer {
                 }
                 return 0;
             })));
+            dispatcher.register(ClientCommandManager.literal("aai_set_debug_region_links_renderer").executes(context -> {
+                DEBUG_VISIBLE_REGION_LINKS = null;
+                return 0;
+            }).then(ClientCommandManager.argument("type", RegistryEntryArgumentType.registryEntry(registryAccess, ChunkRegionifier.REGISTRY_KEY)).executes(context -> {
+                final RegistryEntry.Reference<?> regionifier = context.getArgument("type", RegistryEntry.Reference.class);
+                if (regionifier.registryKey().isOf(ChunkRegionifier.REGISTRY_KEY)) {
+                    DEBUG_VISIBLE_REGION_LINKS = (ChunkRegionifier<?>) regionifier.value();
+                }
+                return 0;
+            })));
         });
     }
 
@@ -87,6 +100,10 @@ public class AdvancedAiClient implements ClientModInitializer {
 
     public static boolean shouldRender(final ChunkRegionifier<?> regionifier) {
         return regionifier == DEBUG_VISIBLE_REGION;
+    }
+
+    public static boolean shouldRenderLinks(final ChunkRegionifier<?> regionifier) {
+        return regionifier == DEBUG_VISIBLE_REGION_LINKS;
     }
 
     private static <T> void render(final DebugRenderer<T> renderer, final Map<ChunkSectionPos, DebugSectionInfo<?>> infos, final WorldRenderContext context) {

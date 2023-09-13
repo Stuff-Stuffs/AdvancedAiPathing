@@ -19,9 +19,9 @@ import org.slf4j.Logger;
 import java.util.Map;
 
 public class ChunkRegionJob implements AiJob {
-    private final ChunkSectionPos pos;
-    private final ServerWorld world;
-    private final ChunkRegionifier<?> regionifier;
+    public final ChunkSectionPos pos;
+    public final ServerWorld world;
+    public final ChunkRegionifier<?> regionifier;
     private ChunkSectionRegions regions;
 
     public ChunkRegionJob(final ChunkSectionPos pos, final ServerWorld world, final ChunkRegionifier<?> regionifier) {
@@ -53,7 +53,7 @@ public class ChunkRegionJob implements AiJob {
 
     @Override
     public void apply(final Logger logger) {
-        if (!world.isChunkLoaded(pos.getSectionX(), pos.getSectionZ())) {
+        if (regionifier == null || !world.isChunkLoaded(pos.getSectionX(), pos.getSectionZ())) {
             return;
         }
         final Chunk chunk = world.getChunk(pos.getSectionX(), pos.getSectionZ(), ChunkStatus.FULL, false);

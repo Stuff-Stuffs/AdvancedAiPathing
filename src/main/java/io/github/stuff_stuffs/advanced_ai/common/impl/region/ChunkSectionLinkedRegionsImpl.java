@@ -51,12 +51,14 @@ public class ChunkSectionLinkedRegionsImpl implements ChunkSectionLinkedRegions 
             if ((current & ChunkSectionRegions.PREFIX_MASK) == regions.prefix()) {
                 if ((adjacent & ChunkSectionRegions.PREFIX_MASK) == regions.prefix()) {
                     linkBoth(current, adjacent);
+                    return;
                 } else {
                     final int index = (int) (current & ~ChunkSectionRegions.PREFIX_MASK);
                     if (index < links.length) {
                         final long[] copy = Arrays.copyOf(links[index], links[index].length + 1);
                         copy[copy.length - 1] = adjacent;
                         links[index] = copy;
+                        return;
                     }
                 }
             }
@@ -67,8 +69,8 @@ public class ChunkSectionLinkedRegionsImpl implements ChunkSectionLinkedRegions 
             final int i0 = (int) (first & ~ChunkSectionRegions.PREFIX_MASK);
             final int i1 = (int) (second & ~ChunkSectionRegions.PREFIX_MASK);
             if (i0 < links.length && i1 < links.length) {
-                final long[] arr0 = Arrays.copyOf(links[i0], links[i0].length);
-                final long[] arr1 = Arrays.copyOf(links[i1], links[i1].length);
+                final long[] arr0 = Arrays.copyOf(links[i0], links[i0].length + 1);
+                final long[] arr1 = Arrays.copyOf(links[i1], links[i1].length + 1);
                 arr0[arr0.length - 1] = second;
                 arr1[arr1.length - 1] = first;
                 links[i0] = arr0;
