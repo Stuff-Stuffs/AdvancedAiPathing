@@ -18,12 +18,12 @@ public class DenseLocationCacheSectionImpl<T> implements LocationCacheSection<T>
         this.modCounts = modCounts;
         universeInfo = classifier.delegate.universeInfo();
         final int round = AiUtil.roundToUpPower2(universeInfo.size());
-        final int size = 32 - Integer.numberOfLeadingZeros(round);
+        final int size = 32 - Integer.numberOfLeadingZeros(round) - 1;
         bitsPerElement = size;
         elementsPerLong = 64 / size;
         packed = new long[(4096 + elementsPerLong - 1) / elementsPerLong];
         final int xOff = pos.getMinX();
-        final int yOff = pos.getMinY();
+        final int yOff = pos.getMinY() + cache.getBottomY();
         final int zOff = pos.getMinZ();
 
         final int mask = (1 << bitsPerElement) - 1;

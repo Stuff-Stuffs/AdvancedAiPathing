@@ -1,13 +1,14 @@
 package io.github.stuff_stuffs.advanced_ai.common.internal;
 
-import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import io.github.stuff_stuffs.advanced_ai.common.api.debug.DebugSectionType;
 import io.github.stuff_stuffs.advanced_ai.common.api.location_caching.LocationClassifier;
+import io.github.stuff_stuffs.advanced_ai.common.api.region.ChunkRegionifier;
 import io.github.stuff_stuffs.advanced_ai.common.api.util.CollisionHelper;
 import io.github.stuff_stuffs.advanced_ai.common.api.util.ShapeCache;
 import io.github.stuff_stuffs.advanced_ai.common.api.util.UniverseInfo;
+import io.github.stuff_stuffs.advanced_ai.common.impl.job.ChunkRegionJob;
 import io.github.stuff_stuffs.advanced_ai.common.impl.job.LocationCachingJob;
 import io.github.stuff_stuffs.advanced_ai.common.internal.extensions.ServerExtensions;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
@@ -79,6 +80,7 @@ public class AdvancedAi implements ModInitializer {
             }
         }
     };
+    public static final ChunkRegionifier<CollisionHelper.FloorCollision> BASIC_REGIONIFIER = new BasicChunkRegionifier();
     private static @Nullable AStar.PathInfo<Node> LAST_PATH = null;
 
 
@@ -88,7 +90,10 @@ public class AdvancedAi implements ModInitializer {
         ServerTickEvents.END_SERVER_TICK.register(server -> ((ServerExtensions) server).advanced_ai$executor().run(25));
         ServerLifecycleEvents.SERVER_STOPPING.register(server -> ((ServerExtensions) server).advanced_ai$executor().stop());
         Registry.register(LocationClassifier.REGISTRY, id("basic"), BASIC);
+        Registry.register(ChunkRegionifier.REGISTRY, id("basic"), BASIC_REGIONIFIER);
         Registry.register(DebugSectionType.REGISTRY, id("location_cache"), DebugSectionType.LOCATION_CACHE_TYPE);
+        Registry.register(DebugSectionType.REGISTRY, id("regions"), DebugSectionType.REGION_DEBUG_TYPE);
+        Registry.register(DebugSectionType.REGISTRY, id("region_link"), DebugSectionType.REGION_LINKS_DEBUG_TYPE);
         ServerTickEvents.START_WORLD_TICK.register(world -> {
             if (LAST_PATH != null && LAST_PATH.path() != null) {
                 if (world.getTime() % 10 != 0) {
@@ -101,32 +106,32 @@ public class AdvancedAi implements ModInitializer {
             }
         });
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
-            dispatcher.register(CommandManager.literal("location_cache").then(CommandManager.argument("radius", IntegerArgumentType.integer(1, 16)).executes(new Command<ServerCommandSource>() {
-                @Override
-                public int run(final CommandContext<ServerCommandSource> context) {
-                    final Vec3d position = context.getSource().getPosition();
-                    final ChunkSectionPos pos = ChunkSectionPos.from(position);
-                    ChunkSectionPos.stream(pos, context.getArgument("radius", Integer.class)).forEach(p -> process(context, p));
-                    return 0;
-                }
+            dispatcher.register(CommandManager.literal("location_cache").then(CommandManager.argument("radius", IntegerArgumentType.integer(0, 16)).executes(context -> {
+                final Vec3d position = context.getSource().getPosition();
+                final ChunkSectionPos pos = ChunkSectionPos.from(position);
+                ChunkSectionPos.stream(pos, context.getArgument("radius", Integer.class)).forEach(p -> processLocationCacheJob(context, p));
+                return 0;
             })));
-            dispatcher.register(CommandManager.literal("path_find").executes(new Command<ServerCommandSource>() {
-                @Override
-                public int run(final CommandContext<ServerCommandSource> context) {
-                    final BlockPos start = BlockPos.ofFloored(context.getSource().getPosition());
-                    final BlockPos target = new BlockPos(start.getX() + 1, -64, start.getZ() + 1);
-                    final Context ctx = new Context(ShapeCache.create(context.getSource().getWorld(), start.add(-256, 0, -256), target.add(256, 0, 256), 512));
-                    final StopWatch stopWatch = StopWatch.createStarted();
-                    final AStar.PathInfo<Node> info = new AStarImpl().findPath(new Node(start.getX(), start.getY(), start.getZ(), null, 0, CollisionHelper.FloorCollision.FLOOR), ctx, target, 1, Double.POSITIVE_INFINITY, true);
-                    stopWatch.stop();
-                    final double v = stopWatch.getTime(TimeUnit.NANOSECONDS) / 1_000_000.0;
-                    System.out.println("Time: " + (long) v + "ms");
-                    System.out.println("Nodes considered: " + info.nodesConsidered());
-                    System.out.println("Nodes/Second: " + (long) (info.nodesConsidered() / (v / 1000.0)));
-                    LAST_PATH = info;
-                    return 0;
-                }
+            dispatcher.register(CommandManager.literal("path_find").executes(context -> {
+                final BlockPos start = BlockPos.ofFloored(context.getSource().getPosition());
+                final BlockPos target = new BlockPos(start.getX() + 1, -64, start.getZ() + 1);
+                final Context ctx = new Context(ShapeCache.create(context.getSource().getWorld(), start.add(-256, 0, -256), target.add(256, 0, 256), 512));
+                final StopWatch stopWatch = StopWatch.createStarted();
+                final AStar.PathInfo<Node> info = new AStarImpl().findPath(new Node(start.getX(), start.getY(), start.getZ(), null, 0, CollisionHelper.FloorCollision.FLOOR), ctx, target, 1, Double.POSITIVE_INFINITY, true);
+                stopWatch.stop();
+                final double v = stopWatch.getTime(TimeUnit.NANOSECONDS) / 1_000_000.0;
+                System.out.println("Time: " + (long) v + "ms");
+                System.out.println("Nodes considered: " + info.nodesConsidered());
+                System.out.println("Nodes/Second: " + (long) (info.nodesConsidered() / (v / 1000.0)));
+                LAST_PATH = info;
+                return 0;
             }));
+            dispatcher.register(CommandManager.literal("aai_regionify").then(CommandManager.argument("radius", IntegerArgumentType.integer(0, 16)).executes(context -> {
+                final Vec3d position = context.getSource().getPosition();
+                final ChunkSectionPos pos = ChunkSectionPos.from(position);
+                ChunkSectionPos.stream(pos, context.getArgument("radius", Integer.class)).forEach(p -> processRegionifyJob(context, p));
+                return 0;
+            })));
         });
     }
 
@@ -264,8 +269,12 @@ public class AdvancedAi implements ModInitializer {
     private record Context(ShapeCache cache) {
     }
 
-    private static void process(final CommandContext<ServerCommandSource> context, final ChunkSectionPos p) {
+    private static void processLocationCacheJob(final CommandContext<ServerCommandSource> context, final ChunkSectionPos p) {
         ((ServerExtensions) context.getSource().getServer()).advanced_ai$executor().enqueue(new LocationCachingJob<>(p, context.getSource().getWorld(), BASIC));
+    }
+
+    private static void processRegionifyJob(final CommandContext<ServerCommandSource> context, final ChunkSectionPos p) {
+        ((ServerExtensions) context.getSource().getServer()).advanced_ai$executor().enqueue(new ChunkRegionJob(p, context.getSource().getWorld(), BASIC_REGIONIFIER));
     }
 
     public static Identifier id(final String path) {

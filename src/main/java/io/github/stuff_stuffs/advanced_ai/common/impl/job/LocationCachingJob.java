@@ -27,6 +27,7 @@ public class LocationCachingJob<T> implements AiJob {
     private final ChunkSectionPos pos;
     private final ServerWorld world;
     private final LocationClassifier<T> classifier;
+    private LocationCacheSection<T> section;
 
     public LocationCachingJob(final ChunkSectionPos pos, final ServerWorld world, final LocationClassifier<T> classifier) {
         this.pos = pos;
@@ -51,15 +52,22 @@ public class LocationCachingJob<T> implements AiJob {
         if (tryRebuild(pos, cache, classifier)) {
             return true;
         }
-        final LocationCacheSection<T> section = new DenseLocationCacheSectionImpl<>(collectModCounts(pos, cache), cache, pos, (ProcessedLocationClassifier<T>) AdvancedAi.PROCESSED_LOCATION_CLASSIFIERS.get(classifier));
-        ((ChunkSectionExtensions) chunk.getSection(yIndex)).advanced_ai$sectionData().put(classifier, section);
-        ((ServerWorldExtensions) world).advanced_ai$debug(new DebugSectionInfo<>(new LocationCacheDebugSection(Map.of(classifier, new LocationCacheDebugSection.Entry<>(classifier, section))), pos, DebugSectionType.LOCATION_CACHE_TYPE));
+        section = new DenseLocationCacheSectionImpl<>(collectModCounts(pos, cache), cache, pos, (ProcessedLocationClassifier<T>) AdvancedAi.PROCESSED_LOCATION_CLASSIFIERS.get(classifier));
         return true;
     }
 
     @Override
-    public void apply(Logger logger) {
-
+    public void apply(final Logger logger) {
+        if (!world.isChunkLoaded(pos.getSectionX(), pos.getSectionZ())) {
+            return;
+        }
+        final Chunk chunk = world.getChunk(pos.getSectionX(), pos.getSectionZ(), ChunkStatus.FULL, false);
+        final int yIndex = world.sectionCoordToIndex(pos.getSectionY());
+        if (chunk == null || yIndex < 0 || yIndex >= world.countVerticalSections()) {
+            return;
+        }
+        ((ChunkSectionExtensions) chunk.getSection(yIndex)).advanced_ai$sectionData().put(classifier, section);
+        ((ServerWorldExtensions) world).advanced_ai$debug(new DebugSectionInfo<>(new LocationCacheDebugSection(Map.of(classifier, new LocationCacheDebugSection.Entry<>(classifier, section))), pos, DebugSectionType.LOCATION_CACHE_TYPE));
     }
 
     @Override
@@ -75,7 +83,7 @@ public class LocationCachingJob<T> implements AiJob {
         final BlockState[] oldArr = new BlockState[AdvancedAi.UPDATES_BEFORE_REBUILD];
         final BlockState[] newArr = new BlockState[AdvancedAi.UPDATES_BEFORE_REBUILD];
         final short[] coords = new short[AdvancedAi.UPDATES_BEFORE_REBUILD];
-        final LocationCacheSection<T> stale = ((ChunkSectionExtensions) centerChunk.getSection(cache.sectionCoordToIndex(p.getSectionY()))).advanced_ai$sectionData().getStale(classifier);
+        final LocationCacheSection<T> stale = ((ChunkSectionExtensions) centerChunk.getSection(cache.sectionCoordToIndex(p.getSectionY()))).advanced_ai$sectionData().getPossibleStale(classifier);
         if (stale == null) {
             return false;
         }

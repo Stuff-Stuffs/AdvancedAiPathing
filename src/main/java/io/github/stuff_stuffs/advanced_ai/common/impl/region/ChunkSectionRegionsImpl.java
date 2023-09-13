@@ -2,9 +2,11 @@ package io.github.stuff_stuffs.advanced_ai.common.impl.region;
 
 import io.github.stuff_stuffs.advanced_ai.common.api.region.ChunkSectionRegion;
 import io.github.stuff_stuffs.advanced_ai.common.api.region.ChunkSectionRegions;
+import io.github.stuff_stuffs.advanced_ai.common.api.util.PackedList;
 import it.unimi.dsi.fastutil.shorts.ShortArrays;
 import it.unimi.dsi.fastutil.shorts.ShortOpenHashSet;
 import it.unimi.dsi.fastutil.shorts.ShortSet;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.math.ChunkSectionPos;
 import net.minecraft.world.HeightLimitView;
 import org.jetbrains.annotations.Nullable;
@@ -30,6 +32,21 @@ public class ChunkSectionRegionsImpl implements ChunkSectionRegions {
     public ChunkSectionRegionsImpl(final long prefix, final ChunkSectionRegion[] regions) {
         this.prefix = prefix;
         this.regions = regions;
+    }
+
+    public ChunkSectionRegionsImpl(final PacketByteBuf buf) {
+        prefix = buf.readLong();
+        final int count = buf.readInt();
+        regions = new ChunkSectionRegion[count];
+        for (int i = 0; i < regions.length; i++) {
+            final int size = buf.readInt();
+            final int[] packed = buf.readIntArray();
+            final short[] shorts = new short[size];
+            for (int j = 0; j < size; j++) {
+                shorts[j] = (short) (packed[j / 2] >>> ((j & 1) == 1 ? 16 : 0));
+            }
+            regions[i] = new ChunkSectionRegionImpl(prefix | i, shorts);
+        }
     }
 
     @Override
@@ -60,22 +77,52 @@ public class ChunkSectionRegionsImpl implements ChunkSectionRegions {
         return prefix;
     }
 
+    @Override
+    public int regionCount() {
+        return regions.length;
+    }
+
+    @Override
+    public void writeToBuf(final PacketByteBuf buf) {
+        buf.writeLong(prefix);
+        buf.writeInt(regions.length);
+        for (final ChunkSectionRegion region : regions) {
+            final PackedList packedList = region.all();
+            final int size = packedList.size();
+            buf.writeInt(size);
+            final int[] packed = new int[(size + 1) / 2];
+            for (int j = 0; j < size; j++) {
+                final int val = packedList.get(j);
+                if ((j & 1) == 1) {
+                    packed[j / 2] |= val << 16;
+                } else {
+                    packed[j / 2] |= val;
+                }
+            }
+            buf.writeIntArray(packed);
+        }
+    }
+
     public static long packChunkSectionPosCompact(final ChunkSectionPos pos, final HeightLimitView view) {
-        final int yIndex = view.sectionCoordToIndex(pos.getSectionY());
+        return packChunkSectionPosCompact(pos.getSectionX(), pos.getSectionY(), pos.getSectionZ(), view);
+    }
+
+    public static long packChunkSectionPosCompact(final int x, final int y, final int z, final HeightLimitView view) {
+        final int yIndex = view.sectionCoordToIndex(y);
         if (yIndex > 255 || yIndex < 0) {
             throw new RuntimeException();
         }
-        long x = pos.getSectionX();
-        if (x < 0) {
-            x = -x;
-            x |= 1 << (X_BITS - 1);
+        long xl = x;
+        if (xl < 0) {
+            xl = -xl;
+            xl |= 1 << (X_BITS - 1);
         }
-        long z = pos.getSectionZ();
-        if (z < 0) {
-            z = -z;
-            z |= 1 << (Z_BITS - 1);
+        long zl = z;
+        if (zl < 0) {
+            zl = -zl;
+            zl |= 1 << (Z_BITS - 1);
         }
-        return x << X_SHIFT | ((long) yIndex & 255) << Y_SHIFT | z << Z_SHIFT;
+        return xl << X_SHIFT | ((long) yIndex & 255) << Y_SHIFT | zl << Z_SHIFT;
     }
 
     public static ChunkSectionPos unpackChunkSectionPosCompact(final long packed, final HeightLimitView view) {

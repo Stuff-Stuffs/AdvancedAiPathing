@@ -54,9 +54,9 @@ public class ShapeCacheImpl extends ChunkCache implements ShapeCache {
         if (chunk == null) {
             return defRet;
         }
-        final ChunkSection section = chunk.getSection(world.sectionCoordToIndex(y >> 4));
+        final ChunkSection section = chunk.getSection(world.getSectionIndex(y));
         final SectionData data = ((ChunkSectionExtensions) section).advanced_ai$sectionData();
-        final LocationCacheSection<T> cacheSection = data.get(classifier);
+        final LocationCacheSection<T> cacheSection = data.getLocationCache(classifier);
         if (cacheSection != null) {
             return cacheSection.get(x, y, z);
         }

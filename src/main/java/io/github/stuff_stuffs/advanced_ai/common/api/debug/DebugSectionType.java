@@ -13,6 +13,8 @@ public class DebugSectionType<T> {
     public static final RegistryKey<Registry<DebugSectionType<?>>> REGISTRY_KEY = RegistryKey.ofRegistry(AdvancedAi.id("debug_types"));
     public static final Registry<DebugSectionType<?>> REGISTRY = FabricRegistryBuilder.createSimple(REGISTRY_KEY).buildAndRegister();
     public static final DebugSectionType<LocationCacheDebugSection> LOCATION_CACHE_TYPE = new DebugSectionType<>(LocationCacheDebugSection::write, LocationCacheDebugSection::new);
+    public static final DebugSectionType<RegionDebugSection> REGION_DEBUG_TYPE = new DebugSectionType<>(RegionDebugSection::write, RegionDebugSection::new);
+    public static final DebugSectionType<RegionLinksDebugSection> REGION_LINKS_DEBUG_TYPE = new DebugSectionType<>(RegionLinksDebugSection::write, RegionLinksDebugSection::new);
     public final BiConsumer<T, PacketByteBuf> encoder;
     public final Function<PacketByteBuf, T> decoder;
 

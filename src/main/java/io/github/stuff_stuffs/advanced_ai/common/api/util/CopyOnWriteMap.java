@@ -5,22 +5,23 @@ import org.jetbrains.annotations.Nullable;
 
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.VarHandle;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
 public class CopyOnWriteMap<K, V> {
-    private static final VarHandle LOOKUPS_HANDLE;
+    private static final VarHandle DELEGATE_HANDLE;
     @SuppressWarnings("FieldMayBeFinal")
-    private Map<K, V> lookups = new Object2ReferenceOpenHashMap<>();
+    private Map<K, V> delegate = new Object2ReferenceOpenHashMap<>();
 
     @Nullable
     public V get(final K key) {
         //noinspection unchecked
-        return ((Map<K, V>) LOOKUPS_HANDLE.getAcquire(this)).get(key);
+        return ((Map<K, V>) DELEGATE_HANDLE.getAcquire(this)).get(key);
     }
 
     public Set<K> keys() {
-        return lookups.keySet();
+        return delegate.keySet();
     }
 
     public V put(final K key, final V value) {
@@ -29,29 +30,40 @@ public class CopyOnWriteMap<K, V> {
         V res;
         do {
             //noinspection unchecked
-            cur = (Map<K, V>) LOOKUPS_HANDLE.getAcquire(this);
+            cur = (Map<K, V>) DELEGATE_HANDLE.getAcquire(this);
             copy = new Object2ReferenceOpenHashMap<>(cur);
             res = copy.put(key, value);
-        } while (LOOKUPS_HANDLE.compareAndExchangeRelease(this, cur, copy) != cur);
+        } while (DELEGATE_HANDLE.compareAndExchangeRelease(this, cur, copy) != cur);
         return res;
     }
 
-    public synchronized V remove(final K key) {
+    public V remove(final K key) {
         Map<K, V> cur;
         Map<K, V> copy;
         V res;
         do {
             //noinspection unchecked
-            cur = (Map<K, V>) LOOKUPS_HANDLE.getAcquire(this);
+            cur = (Map<K, V>) DELEGATE_HANDLE.getAcquire(this);
+            if (!cur.containsKey(key)) {
+                return null;
+            }
             copy = new Object2ReferenceOpenHashMap<>(cur);
             res = copy.remove(key);
-        } while (LOOKUPS_HANDLE.compareAndExchangeRelease(this, cur, copy) != cur);
+        } while (DELEGATE_HANDLE.compareAndExchangeRelease(this, cur, copy) != cur);
         return res;
+    }
+
+    public void clear() {
+        Map<K, V> cur;
+        do {
+            //noinspection unchecked
+            cur = (Map<K, V>) DELEGATE_HANDLE.getAcquire(this);
+        } while (DELEGATE_HANDLE.compareAndExchangeRelease(this, cur, Collections.emptyMap()) != cur);
     }
 
     static {
         try {
-            LOOKUPS_HANDLE = MethodHandles.lookup().findVarHandle(CopyOnWriteMap.class, "lookups", Map.class);
+            DELEGATE_HANDLE = MethodHandles.lookup().findVarHandle(CopyOnWriteMap.class, "delegate", Map.class);
         } catch (final NoSuchFieldException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }
