@@ -72,6 +72,9 @@ public abstract class AbstractChunkRegionifier<T> implements ChunkRegionifier<T>
             final PackedList list = region.all();
             final int size = list.size();
             final PosConsumer posConsumer = (x, y, z) -> {
+                if (cache.isOutOfHeightLimit(y)) {
+                    return;
+                }
                 final long packed = BlockPos.asLong(x, y, z);
                 if (visited.add(packed)) {
                     final Chunk chunk = cache.getChunk(x, y, z);
@@ -83,7 +86,7 @@ public abstract class AbstractChunkRegionifier<T> implements ChunkRegionifier<T>
                     final ChunkSectionRegion query = r.query(LocationCacheSection.pack(x, y, z));
                     final long linkId;
                     if (query == null) {
-                        linkId = ChunkSectionRegionsImpl.packChunkSectionPosCompact(x, y, z, cache) | ~ChunkSectionRegions.PREFIX_MASK;
+                        linkId = ChunkSectionRegionsImpl.packChunkSectionPosCompact(x >> 4, y >> 4, z >> 4, cache) | ~ChunkSectionRegions.PREFIX_MASK;
                     } else {
                         linkId = query.id();
                     }

@@ -46,7 +46,7 @@ public class LocationCachingJob<T> implements AiJob {
             return true;
         }
         final int minX = pos.getMinX();
-        final int minY = pos.getMinY() + world.getBottomY();
+        final int minY = pos.getMinY();
         final int minZ = pos.getMinZ();
         final ShapeCache cache = ShapeCache.create(world, new BlockPos(minX - 16, minY - 16, minZ - 16), new BlockPos(minX + 31, minY + 31, minZ + 31), 2048);
         if (tryRebuild(pos, cache, classifier)) {
@@ -76,7 +76,7 @@ public class LocationCachingJob<T> implements AiJob {
     }
 
     public static <T> boolean tryRebuild(final ChunkSectionPos p, final ShapeCache cache, final LocationClassifier<T> classifier) {
-        final Chunk centerChunk = cache.getChunk(p.getMinX(), p.getMinY() + cache.getBottomY(), p.getMinZ());
+        final Chunk centerChunk = cache.getChunk(p.getMinX(), p.getMinY(), p.getMinZ());
         if (centerChunk == null) {
             return true;
         }

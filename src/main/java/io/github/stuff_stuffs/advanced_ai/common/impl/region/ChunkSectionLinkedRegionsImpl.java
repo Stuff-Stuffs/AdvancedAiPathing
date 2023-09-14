@@ -68,15 +68,15 @@ public class ChunkSectionLinkedRegionsImpl implements ChunkSectionLinkedRegions 
         private void linkBoth(final long first, final long second) {
             final int i0 = (int) (first & ~ChunkSectionRegions.PREFIX_MASK);
             final int i1 = (int) (second & ~ChunkSectionRegions.PREFIX_MASK);
-            if (i0 < links.length && i1 < links.length) {
+            if (i0 < links.length) {
                 final long[] arr0 = Arrays.copyOf(links[i0], links[i0].length + 1);
-                final long[] arr1 = Arrays.copyOf(links[i1], links[i1].length + 1);
                 arr0[arr0.length - 1] = second;
-                arr1[arr1.length - 1] = first;
                 links[i0] = arr0;
+            }
+            if (i1 < links.length) {
+                final long[] arr1 = Arrays.copyOf(links[i1], links[i1].length + 1);
+                arr1[arr1.length - 1] = first;
                 links[i1] = arr1;
-            } else {
-                throw new IndexOutOfBoundsException();
             }
         }
 

@@ -21,7 +21,7 @@ public class ChunkRegionDebugRenderer implements DebugRenderer<RegionDebugSectio
     @Override
     public void render(final RegionDebugSection data, final ChunkSectionPos pos, final WorldRenderContext context) {
         final Vec3d cameraPos = context.camera().getPos();
-        if (cameraPos.squaredDistanceTo(pos.getCenterPos().toCenterPos().add(0, context.world().getBottomY(), 0)) > 32 * 32) {
+        if (cameraPos.squaredDistanceTo(pos.getCenterPos().toCenterPos()) > 48 * 48) {
             return;
         }
         final MatrixStack stack = context.matrixStack();
@@ -55,7 +55,7 @@ public class ChunkRegionDebugRenderer implements DebugRenderer<RegionDebugSectio
         }
         final MatrixStack stack = context.matrixStack();
         stack.push();
-        stack.translate(pos.getMinX(), pos.getMinY() + context.world().getBottomY(), pos.getMinZ());
+        stack.translate(pos.getMinX(), pos.getMinY(), pos.getMinZ());
         final VertexConsumer vertexConsumer = context.consumers().getBuffer(RenderLayer.getLines());
         int i = 0;
         final int k = ChunkRegionifier.REGISTRY.getRawId(key) + 1;

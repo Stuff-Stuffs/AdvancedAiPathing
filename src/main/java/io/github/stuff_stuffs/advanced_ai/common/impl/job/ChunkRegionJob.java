@@ -44,7 +44,7 @@ public class ChunkRegionJob implements AiJob {
             return true;
         }
         final int minX = pos.getMinX();
-        final int minY = pos.getMinY() + world.getBottomY();
+        final int minY = pos.getMinY();
         final int minZ = pos.getMinZ();
         final ShapeCache cache = ShapeCache.create(world, new BlockPos(minX - 16, minY - 16, minZ - 16), new BlockPos(minX + 31, minY + 31, minZ + 31), 2048);
         regions = regionifier.regionify(pos, cache);

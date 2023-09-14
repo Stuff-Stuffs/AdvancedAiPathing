@@ -29,7 +29,7 @@ public class RegionLinksDebugRenderer implements DebugRenderer<RegionLinksDebugS
     @Override
     public void render(final RegionLinksDebugSection data, final ChunkSectionPos pos, final WorldRenderContext context) {
         final BlockPos down = context.camera().getBlockPos().down();
-        final ChunkSectionPos p = ChunkSectionPos.from(down.add(0, -context.world().getBottomY(), 0));
+        final ChunkSectionPos p = ChunkSectionPos.from(down);
         if (!p.equals(pos)) {
             return;
         }
@@ -88,7 +88,7 @@ public class RegionLinksDebugRenderer implements DebugRenderer<RegionLinksDebugS
     private void render(final ChunkSectionRegions regions, final ChunkSectionPos pos, final WorldRenderContext context, final long region) {
         final MatrixStack stack = context.matrixStack();
         stack.push();
-        stack.translate(pos.getMinX(), pos.getMinY() + context.world().getBottomY(), pos.getMinZ());
+        stack.translate(pos.getMinX(), pos.getMinY(), pos.getMinZ());
         final VertexConsumer vertexConsumer = context.consumers().getBuffer(RenderLayer.getLines());
         if ((region & ~ChunkSectionRegions.PREFIX_MASK) == 4095) {
             final Vec3d color = Vec3d.unpackRgb((int) HashCommon.murmurHash3(region));
