@@ -1,7 +1,8 @@
 package io.github.stuff_stuffs.advanced_ai.common.api.util;
 
 import io.github.stuff_stuffs.advanced_ai.common.api.location_caching.LocationClassifier;
-import io.github.stuff_stuffs.advanced_ai.common.impl.util.ShapeCacheImpl;
+import io.github.stuff_stuffs.advanced_ai.common.impl.util.BoundedShapeCacheImpl;
+import io.github.stuff_stuffs.advanced_ai.common.impl.util.UnboundedShapeCacheImpl;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.shape.VoxelShape;
@@ -27,7 +28,15 @@ public interface ShapeCache extends BlockView {
         } else if ((cacheSize & cacheSize - 1) != 0) {
             throw new IllegalArgumentException("Cache size must be a power of 2!");
         } else {
-            return new ShapeCacheImpl(world, minPos, maxPos, cacheSize);
+            return new BoundedShapeCacheImpl(minPos, maxPos, world, cacheSize);
+        }
+    }
+
+    static ShapeCache createUnbounded(final World world, final int cacheSize) {
+        if ((cacheSize & cacheSize - 1) != 0) {
+            throw new IllegalArgumentException("Cache size must be a power of 2!");
+        } else {
+            return new UnboundedShapeCacheImpl(world, cacheSize);
         }
     }
 }

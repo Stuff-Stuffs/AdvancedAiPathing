@@ -10,11 +10,11 @@ import org.slf4j.Logger;
 import java.util.*;
 
 public class SingleThreadedJobExecutor implements RunnableAiJobExecutor {
-    private final Logger logger;
-    private final List<AiJobHandler> handlers;
-    private final List<AiJobHandler> executionOrder;
-    private final int maxWaitingTasks;
-    private final ArrayDeque<HandleJobPair> jobs;
+    protected final Logger logger;
+    protected final List<AiJobHandler> handlers;
+    protected final List<AiJobHandler> executionOrder;
+    protected final int maxWaitingTasks;
+    protected final ArrayDeque<HandleJobPair> jobs;
 
     public SingleThreadedJobExecutor(final List<AiJobHandler> handlers, final Logger logger, final int maxWaitingTasks) {
         this.handlers = handlers;
@@ -30,7 +30,7 @@ public class SingleThreadedJobExecutor implements RunnableAiJobExecutor {
         return enqueue(job, null);
     }
 
-    private Optional<AiJobHandle> enqueue(final AiJob job, final @Nullable AiJobHandler producer) {
+    protected Optional<AiJobHandle> enqueue(final AiJob job, final @Nullable AiJobHandler producer) {
         for (final AiJobHandler handler : handlers) {
             if (handler == producer) {
                 continue;
@@ -91,18 +91,14 @@ public class SingleThreadedJobExecutor implements RunnableAiJobExecutor {
                         }
                     }
                 }
-                if(jobs.isEmpty()) {
+                if (jobs.isEmpty()) {
                     return;
                 }
             }
         }
     }
 
-    @Override
-    public void stop() {
-    }
-
-    private static final class HandleImpl implements AiJobHandle {
+    protected static final class HandleImpl implements AiJobHandle {
         private boolean alive = true;
 
         @Override
@@ -116,9 +112,13 @@ public class SingleThreadedJobExecutor implements RunnableAiJobExecutor {
         }
     }
 
-    private static final class DelegatingHandleImpl implements AiJobHandle {
+    protected static final class DelegatingHandleImpl implements AiJobHandle {
         private boolean alive = true;
         private AiJobHandle delegate;
+
+        public void setDelegate(final AiJobHandle handle) {
+            delegate = handle;
+        }
 
         @Override
         public boolean alive() {
@@ -134,6 +134,6 @@ public class SingleThreadedJobExecutor implements RunnableAiJobExecutor {
         }
     }
 
-    private record HandleJobPair(AiJobHandle handle, AiJob job) {
+    protected record HandleJobPair(AiJobHandle handle, AiJob job) {
     }
 }

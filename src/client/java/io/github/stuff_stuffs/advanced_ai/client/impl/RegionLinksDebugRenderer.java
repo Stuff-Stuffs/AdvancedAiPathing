@@ -54,7 +54,7 @@ public class RegionLinksDebugRenderer implements DebugRenderer<RegionLinksDebugS
                 return;
             }
             final long[][] longs = data.get(key);
-            final int id = ChunkSectionRegionsImpl.unpackCustomPosCompact(query.id());
+            final int id = ChunkSectionRegions.unpackCustomPosCompact(query.id());
             if (id < longs.length) {
                 final Vec3d cameraPos = context.camera().getPos();
                 final MatrixStack stack = context.matrixStack();
@@ -73,7 +73,7 @@ public class RegionLinksDebugRenderer implements DebugRenderer<RegionLinksDebugS
         if (map == null) {
             return;
         }
-        final ChunkSectionPos unpacked = ChunkSectionRegionsImpl.unpackChunkSectionPosCompact(packed, context.world());
+        final ChunkSectionPos unpacked = ChunkSectionRegions.unpackChunkSectionPosCompact(packed, context.world());
         final DebugSectionInfo<RegionDebugSection> info = (DebugSectionInfo<RegionDebugSection>) map.get(unpacked);
         if (info == null) {
             return;

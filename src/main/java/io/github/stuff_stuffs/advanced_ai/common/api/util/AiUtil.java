@@ -30,6 +30,12 @@ public final class AiUtil {
         }
     }
 
+    public static float fastApproximateLog(final float x) {
+        final int i = 0x5F400000 - (Float.floatToRawIntBits(x) >> 1);
+        final float y = Float.intBitsToFloat(i);
+        return y * (1.47f - 0.47f * x * y * y);
+    }
+
     private AiUtil() {
     }
 }

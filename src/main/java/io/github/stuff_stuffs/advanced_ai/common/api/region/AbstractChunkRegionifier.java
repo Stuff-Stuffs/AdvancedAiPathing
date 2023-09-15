@@ -4,7 +4,6 @@ import io.github.stuff_stuffs.advanced_ai.common.api.location_caching.LocationCa
 import io.github.stuff_stuffs.advanced_ai.common.api.location_caching.LocationClassifier;
 import io.github.stuff_stuffs.advanced_ai.common.api.util.PackedList;
 import io.github.stuff_stuffs.advanced_ai.common.api.util.ShapeCache;
-import io.github.stuff_stuffs.advanced_ai.common.impl.region.ChunkSectionRegionsImpl;
 import io.github.stuff_stuffs.advanced_ai.common.internal.extensions.ChunkSectionExtensions;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
@@ -86,7 +85,7 @@ public abstract class AbstractChunkRegionifier<T> implements ChunkRegionifier<T>
                     final ChunkSectionRegion query = r.query(LocationCacheSection.pack(x, y, z));
                     final long linkId;
                     if (query == null) {
-                        linkId = ChunkSectionRegionsImpl.packChunkSectionPosCompact(x >> 4, y >> 4, z >> 4, cache) | ~ChunkSectionRegions.PREFIX_MASK;
+                        linkId = ChunkSectionRegions.packChunkSectionPosCompact(x >> 4, y >> 4, z >> 4, cache) | ~ChunkSectionRegions.PREFIX_MASK;
                     } else {
                         linkId = query.id();
                     }
