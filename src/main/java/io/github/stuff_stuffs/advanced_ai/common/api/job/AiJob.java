@@ -7,16 +7,7 @@ public interface AiJob {
 
     void apply(Logger logger);
 
-    default void init(final Logger logger) {
-    }
-
-    default void onServerStop(final Logger logger) {
-    }
-
     default void cancel(final Logger logger) {
-    }
-
-    default void timeout(final Logger logger) {
     }
 
     default Object debugData() {
