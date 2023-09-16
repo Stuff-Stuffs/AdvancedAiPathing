@@ -1,9 +1,9 @@
 package io.github.stuff_stuffs.advanced_ai.common.impl.util;
 
-import io.github.stuff_stuffs.advanced_ai.common.api.location_caching.LocationCacheSection;
-import io.github.stuff_stuffs.advanced_ai.common.api.location_caching.LocationClassifier;
+import io.github.stuff_stuffs.advanced_ai.common.api.pathing.location_caching.LocationCacheSection;
+import io.github.stuff_stuffs.advanced_ai.common.api.pathing.location_caching.LocationClassifier;
 import io.github.stuff_stuffs.advanced_ai.common.api.util.ShapeCache;
-import io.github.stuff_stuffs.advanced_ai.common.internal.SectionData;
+import io.github.stuff_stuffs.advanced_ai.common.internal.pathing.SectionData;
 import io.github.stuff_stuffs.advanced_ai.common.internal.extensions.ChunkSectionExtensions;
 import it.unimi.dsi.fastutil.HashCommon;
 import net.minecraft.block.BlockState;

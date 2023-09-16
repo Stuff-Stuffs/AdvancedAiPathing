@@ -1,6 +1,6 @@
 package io.github.stuff_stuffs.advanced_ai.common.api.util;
 
-import io.github.stuff_stuffs.advanced_ai.common.api.location_caching.LocationClassifier;
+import io.github.stuff_stuffs.advanced_ai.common.api.pathing.location_caching.LocationClassifier;
 import io.github.stuff_stuffs.advanced_ai.common.impl.util.BoundedShapeCacheImpl;
 import io.github.stuff_stuffs.advanced_ai.common.impl.util.UnboundedShapeCacheImpl;
 import net.minecraft.block.BlockState;

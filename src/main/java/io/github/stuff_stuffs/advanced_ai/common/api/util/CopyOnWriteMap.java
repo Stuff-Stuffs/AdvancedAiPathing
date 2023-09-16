@@ -7,21 +7,16 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.VarHandle;
 import java.util.Collections;
 import java.util.Map;
-import java.util.Set;
 
 public class CopyOnWriteMap<K, V> {
     private static final VarHandle DELEGATE_HANDLE;
     @SuppressWarnings("FieldMayBeFinal")
-    private Map<K, V> delegate = new Object2ReferenceOpenHashMap<>();
+    private Map<K, V> delegate = Collections.emptyMap();
 
     @Nullable
     public V get(final K key) {
         //noinspection unchecked
         return ((Map<K, V>) DELEGATE_HANDLE.getAcquire(this)).get(key);
-    }
-
-    public Set<K> keys() {
-        return delegate.keySet();
     }
 
     public V put(final K key, final V value) {
@@ -47,8 +42,13 @@ public class CopyOnWriteMap<K, V> {
             if (!cur.containsKey(key)) {
                 return null;
             }
-            copy = new Object2ReferenceOpenHashMap<>(cur);
-            res = copy.remove(key);
+            if (cur.size() == 1) {
+                copy = Collections.emptyMap();
+                res = cur.get(key);
+            } else {
+                copy = new Object2ReferenceOpenHashMap<>(cur);
+                res = copy.remove(key);
+            }
         } while (DELEGATE_HANDLE.compareAndExchangeRelease(this, cur, copy) != cur);
         return res;
     }

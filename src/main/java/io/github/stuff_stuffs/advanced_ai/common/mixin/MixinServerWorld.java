@@ -1,7 +1,7 @@
 package io.github.stuff_stuffs.advanced_ai.common.mixin;
 
-import io.github.stuff_stuffs.advanced_ai.common.api.debug.DebugSectionInfo;
-import io.github.stuff_stuffs.advanced_ai.common.api.debug.DebugSectionType;
+import io.github.stuff_stuffs.advanced_ai.common.api.pathing.debug.DebugSectionInfo;
+import io.github.stuff_stuffs.advanced_ai.common.api.pathing.debug.DebugSectionType;
 import io.github.stuff_stuffs.advanced_ai.common.api.job.AiJobExecutor;
 import io.github.stuff_stuffs.advanced_ai.common.api.job.AiServerWorld;
 import io.github.stuff_stuffs.advanced_ai.common.internal.extensions.ServerExtensions;

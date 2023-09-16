@@ -1,8 +1,8 @@
 package io.github.stuff_stuffs.advanced_ai.common.internal.extensions;
 
-import io.github.stuff_stuffs.advanced_ai.common.api.debug.DebugSectionInfo;
-import io.github.stuff_stuffs.advanced_ai.common.api.debug.DebugSectionType;
-import io.github.stuff_stuffs.advanced_ai.common.api.debug.LocationCacheDebugSection;
+import io.github.stuff_stuffs.advanced_ai.common.api.pathing.debug.DebugSectionInfo;
+import io.github.stuff_stuffs.advanced_ai.common.api.pathing.debug.DebugSectionType;
+import io.github.stuff_stuffs.advanced_ai.common.api.pathing.debug.LocationCacheDebugSection;
 import io.github.stuff_stuffs.advanced_ai.common.internal.AdvancedAi;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ReferenceOpenHashMap;

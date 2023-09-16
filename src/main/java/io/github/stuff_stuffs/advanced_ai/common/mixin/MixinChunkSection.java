@@ -1,11 +1,11 @@
 package io.github.stuff_stuffs.advanced_ai.common.mixin;
 
-import io.github.stuff_stuffs.advanced_ai.common.api.location_caching.LocationCacheSection;
+import io.github.stuff_stuffs.advanced_ai.common.api.pathing.location_caching.LocationCacheSection;
 import io.github.stuff_stuffs.advanced_ai.common.api.util.AiUtil;
 import io.github.stuff_stuffs.advanced_ai.common.internal.AdvancedAi;
 import io.github.stuff_stuffs.advanced_ai.common.internal.extensions.ChunkSectionExtensions;
 import io.github.stuff_stuffs.advanced_ai.common.internal.extensions.MemorizingChunkSection;
-import io.github.stuff_stuffs.advanced_ai.common.internal.SectionData;
+import io.github.stuff_stuffs.advanced_ai.common.internal.pathing.SectionData;
 import net.minecraft.block.BlockState;
 import net.minecraft.world.chunk.ChunkSection;
 import org.spongepowered.asm.mixin.Mixin;

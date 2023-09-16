@@ -1,9 +1,10 @@
 package io.github.stuff_stuffs.advanced_ai.common.internal;
 
-import io.github.stuff_stuffs.advanced_ai.common.api.debug.DebugSectionType;
+import io.github.stuff_stuffs.advanced_ai.common.api.pathing.debug.DebugSectionType;
 import io.github.stuff_stuffs.advanced_ai.common.api.job.*;
-import io.github.stuff_stuffs.advanced_ai.common.api.location_caching.LocationClassifier;
-import io.github.stuff_stuffs.advanced_ai.common.api.region.ChunkRegionifier;
+import io.github.stuff_stuffs.advanced_ai.common.api.pathing.job.*;
+import io.github.stuff_stuffs.advanced_ai.common.api.pathing.location_caching.LocationClassifier;
+import io.github.stuff_stuffs.advanced_ai.common.api.pathing.region.ChunkRegionifier;
 import io.github.stuff_stuffs.advanced_ai.common.api.util.CollisionHelper;
 import io.github.stuff_stuffs.advanced_ai.common.api.util.ShapeCache;
 import io.github.stuff_stuffs.advanced_ai.common.api.util.UniverseInfo;
@@ -13,9 +14,10 @@ import io.github.stuff_stuffs.advanced_ai.common.impl.job.LocationCachingJob;
 import io.github.stuff_stuffs.advanced_ai.common.impl.job.executor.SingleThreadedJobExecutor;
 import io.github.stuff_stuffs.advanced_ai.common.internal.extensions.ChunkSectionExtensions;
 import io.github.stuff_stuffs.advanced_ai.common.internal.extensions.ServerExtensions;
+import io.github.stuff_stuffs.advanced_ai.common.internal.pathing.BasicChunkRegionifier;
+import io.github.stuff_stuffs.advanced_ai.common.internal.pathing.ProcessedLocationClassifier;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.registry.RegistryEntryAddedCallback;
 import net.fabricmc.loader.api.FabricLoader;

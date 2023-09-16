@@ -1,15 +1,17 @@
 package io.github.stuff_stuffs.advanced_ai.common.impl.job;
 
-import io.github.stuff_stuffs.advanced_ai.common.api.debug.DebugSectionInfo;
-import io.github.stuff_stuffs.advanced_ai.common.api.debug.DebugSectionType;
-import io.github.stuff_stuffs.advanced_ai.common.api.debug.LocationCacheDebugSection;
+import io.github.stuff_stuffs.advanced_ai.common.api.pathing.debug.DebugSectionInfo;
+import io.github.stuff_stuffs.advanced_ai.common.api.pathing.debug.DebugSectionType;
+import io.github.stuff_stuffs.advanced_ai.common.api.pathing.debug.LocationCacheDebugSection;
 import io.github.stuff_stuffs.advanced_ai.common.api.job.AiJob;
-import io.github.stuff_stuffs.advanced_ai.common.api.location_caching.LocationCacheSection;
-import io.github.stuff_stuffs.advanced_ai.common.api.location_caching.LocationClassifier;
+import io.github.stuff_stuffs.advanced_ai.common.api.pathing.location_caching.LocationCacheSection;
+import io.github.stuff_stuffs.advanced_ai.common.api.pathing.location_caching.LocationClassifier;
+import io.github.stuff_stuffs.advanced_ai.common.api.pathing.location_caching.PreLocationCacheSection;
 import io.github.stuff_stuffs.advanced_ai.common.api.util.ShapeCache;
-import io.github.stuff_stuffs.advanced_ai.common.impl.location_cache.DenseLocationCacheSectionImpl;
+import io.github.stuff_stuffs.advanced_ai.common.impl.pathing.location_cache.DenseLocationCacheSectionImpl;
+import io.github.stuff_stuffs.advanced_ai.common.impl.pathing.location_cache.PreLocationCacheSectionImpl;
+import io.github.stuff_stuffs.advanced_ai.common.impl.pathing.location_cache.UniformLocationCacheSectionImpl;
 import io.github.stuff_stuffs.advanced_ai.common.internal.AdvancedAi;
-import io.github.stuff_stuffs.advanced_ai.common.internal.ProcessedLocationClassifier;
 import io.github.stuff_stuffs.advanced_ai.common.internal.extensions.ChunkSectionExtensions;
 import io.github.stuff_stuffs.advanced_ai.common.internal.extensions.MemorizingChunkSection;
 import io.github.stuff_stuffs.advanced_ai.common.internal.extensions.ServerWorldExtensions;
@@ -52,7 +54,21 @@ public class LocationCachingJob<T> implements AiJob {
         if (tryRebuild(pos, cache, classifier)) {
             return true;
         }
-        section = new DenseLocationCacheSectionImpl<>(collectModCounts(pos, cache), cache, pos, (ProcessedLocationClassifier<T>) AdvancedAi.PROCESSED_LOCATION_CLASSIFIERS.get(classifier));
+        final PreLocationCacheSection<T> pre = new PreLocationCacheSectionImpl<>(classifier, pos, cache);
+        final int size = classifier.universeInfo().size();
+        T f = null;
+        int nonZeroCount = 0;
+        for (int i = 0; i < size; i++) {
+            if (pre.count(i) > 0) {
+                f = classifier.universeInfo().fromIndex(i);
+                nonZeroCount++;
+            }
+        }
+        if (nonZeroCount == 1) {
+            section = new UniformLocationCacheSectionImpl<>(collectModCounts(pos, cache), f);
+        } else {
+            section = new DenseLocationCacheSectionImpl<>(collectModCounts(pos, cache), pre, classifier);
+        }
         return true;
     }
 

@@ -1,12 +1,12 @@
 package io.github.stuff_stuffs.advanced_ai.common.impl.job;
 
-import io.github.stuff_stuffs.advanced_ai.common.api.debug.DebugSectionInfo;
-import io.github.stuff_stuffs.advanced_ai.common.api.debug.DebugSectionType;
-import io.github.stuff_stuffs.advanced_ai.common.api.debug.RegionLinksDebugSection;
+import io.github.stuff_stuffs.advanced_ai.common.api.pathing.debug.DebugSectionInfo;
+import io.github.stuff_stuffs.advanced_ai.common.api.pathing.debug.DebugSectionType;
+import io.github.stuff_stuffs.advanced_ai.common.api.pathing.debug.RegionLinksDebugSection;
 import io.github.stuff_stuffs.advanced_ai.common.api.job.AiJob;
-import io.github.stuff_stuffs.advanced_ai.common.api.region.ChunkRegionifier;
-import io.github.stuff_stuffs.advanced_ai.common.api.region.ChunkSectionLinkedRegions;
-import io.github.stuff_stuffs.advanced_ai.common.api.region.ChunkSectionRegions;
+import io.github.stuff_stuffs.advanced_ai.common.api.pathing.region.ChunkRegionifier;
+import io.github.stuff_stuffs.advanced_ai.common.api.pathing.region.ChunkSectionLinkedRegions;
+import io.github.stuff_stuffs.advanced_ai.common.api.pathing.region.ChunkSectionRegions;
 import io.github.stuff_stuffs.advanced_ai.common.api.util.ShapeCache;
 import io.github.stuff_stuffs.advanced_ai.common.internal.extensions.ChunkSectionExtensions;
 import io.github.stuff_stuffs.advanced_ai.common.internal.extensions.ServerWorldExtensions;

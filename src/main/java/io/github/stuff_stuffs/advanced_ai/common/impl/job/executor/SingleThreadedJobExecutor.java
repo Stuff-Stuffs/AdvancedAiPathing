@@ -12,16 +12,13 @@ import java.util.*;
 public class SingleThreadedJobExecutor implements RunnableAiJobExecutor {
     protected final Logger logger;
     protected final List<AiJobHandler> handlers;
-    protected final List<AiJobHandler> executionOrder;
     protected final int maxWaitingTasks;
     protected final ArrayDeque<HandleJobPair> jobs;
 
     public SingleThreadedJobExecutor(final List<AiJobHandler> handlers, final Logger logger, final int maxWaitingTasks) {
         this.handlers = handlers;
-        executionOrder = new ArrayList<>(handlers);
         this.maxWaitingTasks = maxWaitingTasks;
         jobs = new ArrayDeque<>(maxWaitingTasks);
-        Collections.reverse(executionOrder);
         this.logger = logger;
     }
 
@@ -80,7 +77,7 @@ public class SingleThreadedJobExecutor implements RunnableAiJobExecutor {
             }
             if (jobs.isEmpty()) {
                 final DelegatingHandleImpl handle = new DelegatingHandleImpl();
-                for (final AiJobHandler handler : executionOrder) {
+                for (final AiJobHandler handler : handlers) {
                     final AiJob job = handler.produceWork(handle);
                     if (job != null) {
                         final Optional<AiJobHandle> enqueue = enqueue(job, handler);
@@ -88,6 +85,9 @@ public class SingleThreadedJobExecutor implements RunnableAiJobExecutor {
                             job.cancel(logger);
                         } else {
                             handle.delegate = enqueue.get();
+                            if(!jobs.isEmpty()) {
+                                break;
+                            }
                         }
                     }
                 }
