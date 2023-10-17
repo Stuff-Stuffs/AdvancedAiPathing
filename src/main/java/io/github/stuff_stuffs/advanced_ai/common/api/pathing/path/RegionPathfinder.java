@@ -50,7 +50,7 @@ public class RegionPathfinder<T> extends AStar<RegionPathfinder.RegionNode, Regi
         final int baseY = chunkY << 4;
         final int baseZ = chunkZ << 4;
         if ((node.key & ~ChunkSectionRegions.PREFIX_MASK) != 4095) {
-            final ChunkSectionRegions regions = ((ChunkSectionExtensions) section).advanced_ai$sectionData().getRegions(regionifier);
+            final ChunkSectionRegions regions = ((ChunkSectionExtensions) section).advanced_ai_pathing$sectionData().getRegions(regionifier);
             if (regions != null) {
                 final ChunkSectionRegion region = regions.byId(node.key);
                 if (region != null) {
@@ -116,7 +116,7 @@ public class RegionPathfinder<T> extends AStar<RegionPathfinder.RegionNode, Regi
         final int baseY = chunkY << 4;
         final int baseZ = chunkZ << 4;
         if ((node.key & ~ChunkSectionRegions.PREFIX_MASK) != 4095) {
-            final ChunkSectionRegions regions = ((ChunkSectionExtensions) section).advanced_ai$sectionData().getRegions(regionifier);
+            final ChunkSectionRegions regions = ((ChunkSectionExtensions) section).advanced_ai_pathing$sectionData().getRegions(regionifier);
             if (regions != null) {
                 final ChunkSectionRegion region = regions.byId(node.key);
                 if (region != null) {
@@ -192,7 +192,7 @@ public class RegionPathfinder<T> extends AStar<RegionPathfinder.RegionNode, Regi
         }
         final int chunkY = ChunkSectionRegions.unpackChunkSectionPosY(previous.key, chunk);
         final ChunkSection section = chunk.getSection(chunk.sectionCoordToIndex(chunkY));
-        final ChunkSectionLinkedRegions links = ((ChunkSectionExtensions) section).advanced_ai$sectionData().getLinks(regionifier);
+        final ChunkSectionLinkedRegions links = ((ChunkSectionExtensions) section).advanced_ai_pathing$sectionData().getLinks(regionifier);
         if (links == null) {
             return 0;
         }

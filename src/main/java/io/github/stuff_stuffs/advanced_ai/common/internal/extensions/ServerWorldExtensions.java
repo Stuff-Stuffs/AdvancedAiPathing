@@ -1,17 +1,7 @@
 package io.github.stuff_stuffs.advanced_ai.common.internal.extensions;
 
-import io.github.stuff_stuffs.advanced_ai.common.api.pathing.debug.DebugSectionInfo;
-import io.github.stuff_stuffs.advanced_ai.common.api.pathing.debug.DebugSectionType;
-import io.github.stuff_stuffs.advanced_ai.common.api.pathing.debug.LocationCacheDebugSection;
-import io.github.stuff_stuffs.advanced_ai.common.internal.AdvancedAi;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ReferenceOpenHashMap;
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
-import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.ChunkSectionPos;
 import net.minecraft.world.World;
@@ -23,9 +13,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 public interface ServerWorldExtensions {
-    void advanced_ai$invalidate(long chunkSectionPos);
-
-    void advanced_ai$debug(DebugSectionInfo<?> info);
+    void advanced_ai_pathing$invalidate(long chunkSectionPos);
 
     static void invalidate(final Long2ObjectMap<boolean[]> map, final long chunkSectionPos, final World world) {
         final long chunkPos = ChunkPos.toLong(ChunkSectionPos.unpackX(chunkSectionPos), ChunkSectionPos.unpackZ(chunkSectionPos));
@@ -68,23 +56,10 @@ public interface ServerWorldExtensions {
                                 if (section == null) {
                                     continue;
                                 }
-                                ((ChunkSectionExtensions) section).advanced_ai$sectionData().purgeAll();
-                                ((ServerWorldExtensions) world).advanced_ai$debug(new DebugSectionInfo<>(new LocationCacheDebugSection(Map.of()), ChunkSectionPos.from(cursor, chunk.sectionIndexToCoord(y)), DebugSectionType.LOCATION_CACHE_TYPE));
+                                ((ChunkSectionExtensions) section).advanced_ai_pathing$sectionData().purgeAll();
                             }
                         }
                     }
-                }
-            }
-        }
-    }
-
-    static void debug(final Map<DebugSectionType<?>, Map<ChunkSectionPos, DebugSectionInfo<?>>> debugInfos, final ServerWorld world) {
-        for (final Map.Entry<DebugSectionType<?>, Map<ChunkSectionPos, DebugSectionInfo<?>>> entry : debugInfos.entrySet()) {
-            for (final Map.Entry<ChunkSectionPos, DebugSectionInfo<?>> inner : entry.getValue().entrySet()) {
-                for (final ServerPlayerEntity player : PlayerLookup.tracking(world, inner.getKey().toChunkPos())) {
-                    final PacketByteBuf buf = PacketByteBufs.create();
-                    inner.getValue().write(buf);
-                    ServerPlayNetworking.send(player, AdvancedAi.DEBUG_CHANNEL, buf);
                 }
             }
         }

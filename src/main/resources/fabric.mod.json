@@ -1,31 +1,28 @@
 {
   "schemaVersion": 1,
-  "id": "advanced_ai",
+  "id": "advanced_ai_pathing",
   "version": "${version}",
-  "name": "AdvancedAi",
-  "description": "This is an example description! Tell everyone what your mod is about!",
+  "name": "AdvancedAiPathing",
+  "description": "Ai Pathing Library",
   "authors": [
-    "Me!"
+    "Stuff-Stuffs"
   ],
   "contact": {
-    "homepage": "https://fabricmc.net/",
-    "sources": "https://github.com/FabricMC/fabric-example-mod"
   },
   "license": "CC0-1.0",
-  "icon": "assets/advanced_ai/icon.png",
   "environment": "*",
   "entrypoints": {
     "main": [
-      "io.github.stuff_stuffs.advanced_ai.common.internal.AdvancedAi"
+      "io.github.stuff_stuffs.advanced_ai.common.internal.AdvancedAiPathing"
     ],
     "client": [
-      "io.github.stuff_stuffs.advanced_ai.client.internal.AdvancedAiClient"
+      "io.github.stuff_stuffs.advanced_ai.client.internal.AdvancedAiPathingClient"
     ]
   },
   "mixins": [
-    "advanced_ai.mixins.json",
+    "advanced_ai_pathing.mixins.json",
     {
-      "config": "advanced_ai.client.mixins.json",
+      "config": "advanced_ai_pathing.client.mixins.json",
       "environment": "client"
     }
   ],
@@ -34,8 +31,5 @@
     "minecraft": "1.20.1",
     "java": ">=17",
     "fabric-api": "*"
-  },
-  "suggests": {
-    "another-mod": "*"
   }
 }

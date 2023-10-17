@@ -1,22 +1,16 @@
 package io.github.stuff_stuffs.advanced_ai.common.impl.job;
 
-import io.github.stuff_stuffs.advanced_ai.common.api.pathing.debug.DebugSectionInfo;
-import io.github.stuff_stuffs.advanced_ai.common.api.pathing.debug.DebugSectionType;
-import io.github.stuff_stuffs.advanced_ai.common.api.pathing.debug.RegionDebugSection;
 import io.github.stuff_stuffs.advanced_ai.common.api.job.AiJob;
 import io.github.stuff_stuffs.advanced_ai.common.api.pathing.region.ChunkRegionifier;
 import io.github.stuff_stuffs.advanced_ai.common.api.pathing.region.ChunkSectionRegions;
 import io.github.stuff_stuffs.advanced_ai.common.api.util.ShapeCache;
 import io.github.stuff_stuffs.advanced_ai.common.internal.extensions.ChunkSectionExtensions;
-import io.github.stuff_stuffs.advanced_ai.common.internal.extensions.ServerWorldExtensions;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkSectionPos;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkStatus;
 import org.slf4j.Logger;
-
-import java.util.Map;
 
 public class ChunkRegionJob implements AiJob {
     public final ChunkSectionPos pos;
@@ -40,7 +34,7 @@ public class ChunkRegionJob implements AiJob {
         if (chunk == null || yIndex < 0 || yIndex >= world.countVerticalSections()) {
             return true;
         }
-        if (((ChunkSectionExtensions) chunk.getSection(yIndex)).advanced_ai$sectionData().getLocationCache(regionifier.classifier()) == null) {
+        if (((ChunkSectionExtensions) chunk.getSection(yIndex)).advanced_ai_pathing$sectionData().getLocationCache(regionifier.classifier()) == null) {
             return true;
         }
         final int minX = pos.getMinX();
@@ -61,8 +55,7 @@ public class ChunkRegionJob implements AiJob {
         if (chunk == null || yIndex < 0 || yIndex >= world.countVerticalSections()) {
             return;
         }
-        ((ChunkSectionExtensions) chunk.getSection(yIndex)).advanced_ai$sectionData().put(regionifier, regions);
-        ((ServerWorldExtensions) world).advanced_ai$debug(new DebugSectionInfo<>(new RegionDebugSection(Map.of(regionifier, regions)), pos, DebugSectionType.REGION_DEBUG_TYPE));
+        ((ChunkSectionExtensions) chunk.getSection(yIndex)).advanced_ai_pathing$sectionData().put(regionifier, regions);
     }
 
     @Override

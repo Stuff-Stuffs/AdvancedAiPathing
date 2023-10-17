@@ -34,7 +34,7 @@ import org.joml.Vector3f;
 
 import java.util.concurrent.TimeUnit;
 
-public final class AdvancedAiDebug {
+public final class AdvancedAiPathingDebug {
     private static @Nullable AStar.PathInfo<Node> LAST_PATH = null;
     private static @Nullable AStar.PathInfo<RegionPathfinder.RegionNode> LAST_REGION_PATH = null;
 
@@ -110,7 +110,7 @@ public final class AdvancedAiDebug {
     }
 
     private static AStar.PathInfo<RegionPathfinder.RegionNode> regionPath(final ServerWorld world, final BlockPos start, final BlockPos target) {
-        final RegionPathfinder<CollisionHelper.FloorCollision> pathfinder = new RegionPathfinder<>(AdvancedAi.BASIC_REGIONIFIER);
+        final RegionPathfinder<CollisionHelper.FloorCollision> pathfinder = new RegionPathfinder<>(AdvancedAiPathing.BASIC_REGIONIFIER);
         final ShapeCache cache = ShapeCache.createUnbounded(world, 2048);
         final Chunk startChunk = cache.getChunk(start.getX(), 0, start.getZ());
         if (startChunk == null) {
@@ -120,7 +120,7 @@ public final class AdvancedAiDebug {
         if (yIndex < 0 || yIndex >= world.countVerticalSections()) {
             return new AStar.PathInfo<>(0, null);
         }
-        final ChunkSectionRegions regions = ((ChunkSectionExtensions) startChunk.getSection(yIndex)).advanced_ai$sectionData().getRegions(AdvancedAi.BASIC_REGIONIFIER);
+        final ChunkSectionRegions regions = ((ChunkSectionExtensions) startChunk.getSection(yIndex)).advanced_ai_pathing$sectionData().getRegions(AdvancedAiPathing.BASIC_REGIONIFIER);
         if (regions == null) {
             return new AStar.PathInfo<>(0, null);
         }
@@ -191,7 +191,7 @@ public final class AdvancedAiDebug {
         }
 
         private CollisionHelper.FloorCollision getLocationType(final int x, final int y, final int z, final ShapeCache shapeCache) {
-            return shapeCache.getLocationCache(x, y, z, CollisionHelper.FloorCollision.CLOSED, AdvancedAi.BASIC);
+            return shapeCache.getLocationCache(x, y, z, CollisionHelper.FloorCollision.CLOSED, AdvancedAiPathing.BASIC);
         }
 
         @Override
@@ -275,7 +275,7 @@ public final class AdvancedAiDebug {
             return;
         }
         final ChunkSection section = chunk.getSection(world.sectionCoordToIndex(sectionPosY));
-        final ChunkSectionRegions regions = ((ChunkSectionExtensions) section).advanced_ai$sectionData().getRegions(AdvancedAi.BASIC_REGIONIFIER);
+        final ChunkSectionRegions regions = ((ChunkSectionExtensions) section).advanced_ai_pathing$sectionData().getRegions(AdvancedAiPathing.BASIC_REGIONIFIER);
         if (regions == null) {
             return;
         }
@@ -301,17 +301,17 @@ public final class AdvancedAiDebug {
     }
 
     private static void processLocationCacheJob(final CommandContext<ServerCommandSource> context, final ChunkSectionPos p) {
-        ((ServerExtensions) context.getSource().getServer()).advanced_ai$executor().enqueue(new LocationCachingJob<>(p, context.getSource().getWorld(), AdvancedAi.BASIC));
+        ((ServerExtensions) context.getSource().getServer()).advanced_ai_pathing$executor().enqueue(new LocationCachingJob<>(p, context.getSource().getWorld(), AdvancedAiPathing.BASIC));
     }
 
     private static void processRegionifyJob(final CommandContext<ServerCommandSource> context, final ChunkSectionPos p) {
-        ((ServerExtensions) context.getSource().getServer()).advanced_ai$executor().enqueue(new ChunkRegionJob(p, context.getSource().getWorld(), AdvancedAi.BASIC_REGIONIFIER));
+        ((ServerExtensions) context.getSource().getServer()).advanced_ai_pathing$executor().enqueue(new ChunkRegionJob(p, context.getSource().getWorld(), AdvancedAiPathing.BASIC_REGIONIFIER));
     }
 
     private static void processRegionLinkJob(final CommandContext<ServerCommandSource> context, final ChunkSectionPos p) {
-        ((ServerExtensions) context.getSource().getServer()).advanced_ai$executor().enqueue(new ChunkRegionLinkJob(p, context.getSource().getWorld(), AdvancedAi.BASIC_REGIONIFIER));
+        ((ServerExtensions) context.getSource().getServer()).advanced_ai_pathing$executor().enqueue(new ChunkRegionLinkJob(p, context.getSource().getWorld(), AdvancedAiPathing.BASIC_REGIONIFIER));
     }
 
-    private AdvancedAiDebug() {
+    private AdvancedAiPathingDebug() {
     }
 }

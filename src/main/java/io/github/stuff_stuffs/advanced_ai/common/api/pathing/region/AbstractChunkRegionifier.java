@@ -78,7 +78,7 @@ public abstract class AbstractChunkRegionifier<T> implements ChunkRegionifier<T>
                 if (visited.add(packed)) {
                     final Chunk chunk = cache.getChunk(x, y, z);
                     final ChunkSection section = chunk.getSection(cache.sectionCoordToIndex(y >> 4));
-                    final ChunkSectionRegions r = ((ChunkSectionExtensions) section).advanced_ai$sectionData().getRegions(AbstractChunkRegionifier.this);
+                    final ChunkSectionRegions r = ((ChunkSectionExtensions) section).advanced_ai_pathing$sectionData().getRegions(AbstractChunkRegionifier.this);
                     if (r == null) {
                         throw new NullPointerException();
                     }

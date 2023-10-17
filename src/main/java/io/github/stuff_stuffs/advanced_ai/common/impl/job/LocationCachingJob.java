@@ -1,20 +1,13 @@
 package io.github.stuff_stuffs.advanced_ai.common.impl.job;
 
-import io.github.stuff_stuffs.advanced_ai.common.api.pathing.debug.DebugSectionInfo;
-import io.github.stuff_stuffs.advanced_ai.common.api.pathing.debug.DebugSectionType;
-import io.github.stuff_stuffs.advanced_ai.common.api.pathing.debug.LocationCacheDebugSection;
 import io.github.stuff_stuffs.advanced_ai.common.api.job.AiJob;
 import io.github.stuff_stuffs.advanced_ai.common.api.pathing.location_caching.LocationCacheSection;
 import io.github.stuff_stuffs.advanced_ai.common.api.pathing.location_caching.LocationClassifier;
-import io.github.stuff_stuffs.advanced_ai.common.api.pathing.location_caching.PreLocationCacheSection;
 import io.github.stuff_stuffs.advanced_ai.common.api.util.ShapeCache;
-import io.github.stuff_stuffs.advanced_ai.common.impl.pathing.location_cache.DenseLocationCacheSectionImpl;
-import io.github.stuff_stuffs.advanced_ai.common.impl.pathing.location_cache.PreLocationCacheSectionImpl;
-import io.github.stuff_stuffs.advanced_ai.common.impl.pathing.location_cache.UniformLocationCacheSectionImpl;
-import io.github.stuff_stuffs.advanced_ai.common.internal.AdvancedAi;
+import io.github.stuff_stuffs.advanced_ai.common.impl.pathing.location_cache.LocationCacheSectionImpl;
+import io.github.stuff_stuffs.advanced_ai.common.internal.AdvancedAiPathing;
 import io.github.stuff_stuffs.advanced_ai.common.internal.extensions.ChunkSectionExtensions;
 import io.github.stuff_stuffs.advanced_ai.common.internal.extensions.MemorizingChunkSection;
-import io.github.stuff_stuffs.advanced_ai.common.internal.extensions.ServerWorldExtensions;
 import net.minecraft.block.BlockState;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
@@ -22,8 +15,6 @@ import net.minecraft.util.math.ChunkSectionPos;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkStatus;
 import org.slf4j.Logger;
-
-import java.util.Map;
 
 public class LocationCachingJob<T> implements AiJob {
     private final ChunkSectionPos pos;
@@ -54,21 +45,7 @@ public class LocationCachingJob<T> implements AiJob {
         if (tryRebuild(pos, cache, classifier)) {
             return true;
         }
-        final PreLocationCacheSection<T> pre = new PreLocationCacheSectionImpl<>(classifier, pos, cache);
-        final int size = classifier.universeInfo().size();
-        T f = null;
-        int nonZeroCount = 0;
-        for (int i = 0; i < size; i++) {
-            if (pre.count(i) > 0) {
-                f = classifier.universeInfo().fromIndex(i);
-                nonZeroCount++;
-            }
-        }
-        if (nonZeroCount == 1) {
-            section = new UniformLocationCacheSectionImpl<>(collectModCounts(pos, cache), f);
-        } else {
-            section = new DenseLocationCacheSectionImpl<>(collectModCounts(pos, cache), pre, classifier);
-        }
+        section = new LocationCacheSectionImpl<>(collectModCounts(pos, cache), classifier, pos, cache);
         return true;
     }
 
@@ -82,8 +59,7 @@ public class LocationCachingJob<T> implements AiJob {
         if (chunk == null || yIndex < 0 || yIndex >= world.countVerticalSections()) {
             return;
         }
-        ((ChunkSectionExtensions) chunk.getSection(yIndex)).advanced_ai$sectionData().put(classifier, section);
-        ((ServerWorldExtensions) world).advanced_ai$debug(new DebugSectionInfo<>(new LocationCacheDebugSection(Map.of(classifier, new LocationCacheDebugSection.Entry<>(classifier, section))), pos, DebugSectionType.LOCATION_CACHE_TYPE));
+        ((ChunkSectionExtensions) chunk.getSection(yIndex)).advanced_ai_pathing$sectionData().put(classifier, section);
     }
 
     @Override
@@ -96,10 +72,10 @@ public class LocationCachingJob<T> implements AiJob {
         if (centerChunk == null) {
             return true;
         }
-        final BlockState[] oldArr = new BlockState[AdvancedAi.UPDATES_BEFORE_REBUILD];
-        final BlockState[] newArr = new BlockState[AdvancedAi.UPDATES_BEFORE_REBUILD];
-        final short[] coords = new short[AdvancedAi.UPDATES_BEFORE_REBUILD];
-        final LocationCacheSection<T> stale = ((ChunkSectionExtensions) centerChunk.getSection(cache.sectionCoordToIndex(p.getSectionY()))).advanced_ai$sectionData().getPossibleStale(classifier);
+        final BlockState[] oldArr = new BlockState[AdvancedAiPathing.UPDATES_BEFORE_REBUILD];
+        final BlockState[] newArr = new BlockState[AdvancedAiPathing.UPDATES_BEFORE_REBUILD];
+        final short[] coords = new short[AdvancedAiPathing.UPDATES_BEFORE_REBUILD];
+        final LocationCacheSection<T> stale = ((ChunkSectionExtensions) centerChunk.getSection(cache.sectionCoordToIndex(p.getSectionY()))).advanced_ai_pathing$sectionData().getPossibleStale(classifier);
         if (stale == null) {
             return false;
         }
@@ -121,15 +97,15 @@ public class LocationCachingJob<T> implements AiJob {
                         }
                     } else {
                         final MemorizingChunkSection section = (MemorizingChunkSection) c.getSection(yIndex);
-                        final long modCount = section.advanced_ai$modCount();
+                        final long modCount = section.advanced_ai_pathing$modCount();
                         final long currentModCount = modCounts[modCountIndex];
                         if (modCount == currentModCount) {
                             continue;
                         }
-                        if (modCount < modCounts[modCountIndex] || modCount >= currentModCount + AdvancedAi.UPDATES_BEFORE_REBUILD) {
+                        if (modCount < modCounts[modCountIndex] || modCount >= currentModCount + AdvancedAiPathing.UPDATES_BEFORE_REBUILD) {
                             return false;
                         }
-                        if (!section.advanced_ai$copy_updates(currentModCount, oldArr, 0, newArr, 0, coords, 0)) {
+                        if (!section.advanced_ai_pathing$copy_updates(currentModCount, oldArr, 0, newArr, 0, coords, 0)) {
                             return false;
                         }
                         final int count = (int) (modCount - currentModCount);
@@ -149,7 +125,7 @@ public class LocationCachingJob<T> implements AiJob {
                 }
             }
         }
-        final LocationCacheSection<T> promote = ((ChunkSectionExtensions) centerChunk.getSection(cache.sectionCoordToIndex(p.getSectionY()))).advanced_ai$sectionData().promote(classifier);
+        final LocationCacheSection<T> promote = ((ChunkSectionExtensions) centerChunk.getSection(cache.sectionCoordToIndex(p.getSectionY()))).advanced_ai_pathing$sectionData().promote(classifier);
         return promote != null;
     }
 
@@ -165,7 +141,7 @@ public class LocationCachingJob<T> implements AiJob {
                         modCounts[modCountIndex] = -1;
                     } else {
                         final MemorizingChunkSection section = (MemorizingChunkSection) c.getSection(yIndex);
-                        final long modCount = section.advanced_ai$modCount();
+                        final long modCount = section.advanced_ai_pathing$modCount();
                         modCounts[modCountIndex] = modCount;
                     }
                 }

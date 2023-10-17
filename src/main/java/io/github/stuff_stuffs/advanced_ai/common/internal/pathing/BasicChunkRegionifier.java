@@ -6,7 +6,7 @@ import io.github.stuff_stuffs.advanced_ai.common.api.pathing.region.AbstractChun
 import io.github.stuff_stuffs.advanced_ai.common.api.pathing.region.ChunkSectionRegions;
 import io.github.stuff_stuffs.advanced_ai.common.api.util.CollisionHelper;
 import io.github.stuff_stuffs.advanced_ai.common.api.util.ShapeCache;
-import io.github.stuff_stuffs.advanced_ai.common.internal.AdvancedAi;
+import io.github.stuff_stuffs.advanced_ai.common.internal.AdvancedAiPathing;
 import net.minecraft.util.math.ChunkSectionPos;
 
 public class BasicChunkRegionifier extends AbstractChunkRegionifier<CollisionHelper.FloorCollision> {
@@ -91,6 +91,6 @@ public class BasicChunkRegionifier extends AbstractChunkRegionifier<CollisionHel
 
     @Override
     public LocationClassifier<CollisionHelper.FloorCollision> classifier() {
-        return AdvancedAi.BASIC;
+        return AdvancedAiPathing.BASIC;
     }
 }

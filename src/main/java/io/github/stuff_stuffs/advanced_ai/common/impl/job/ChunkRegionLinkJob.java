@@ -1,23 +1,17 @@
 package io.github.stuff_stuffs.advanced_ai.common.impl.job;
 
-import io.github.stuff_stuffs.advanced_ai.common.api.pathing.debug.DebugSectionInfo;
-import io.github.stuff_stuffs.advanced_ai.common.api.pathing.debug.DebugSectionType;
-import io.github.stuff_stuffs.advanced_ai.common.api.pathing.debug.RegionLinksDebugSection;
 import io.github.stuff_stuffs.advanced_ai.common.api.job.AiJob;
 import io.github.stuff_stuffs.advanced_ai.common.api.pathing.region.ChunkRegionifier;
 import io.github.stuff_stuffs.advanced_ai.common.api.pathing.region.ChunkSectionLinkedRegions;
 import io.github.stuff_stuffs.advanced_ai.common.api.pathing.region.ChunkSectionRegions;
 import io.github.stuff_stuffs.advanced_ai.common.api.util.ShapeCache;
 import io.github.stuff_stuffs.advanced_ai.common.internal.extensions.ChunkSectionExtensions;
-import io.github.stuff_stuffs.advanced_ai.common.internal.extensions.ServerWorldExtensions;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkSectionPos;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkStatus;
 import org.slf4j.Logger;
-
-import java.util.Map;
 
 public class ChunkRegionLinkJob implements AiJob {
     public final ChunkSectionPos pos;
@@ -55,11 +49,11 @@ public class ChunkRegionLinkJob implements AiJob {
                         return true;
                     }
                     if (i == 0 && j == 0 && k == 0) {
-                        localRegions = ((ChunkSectionExtensions) chunk.getSection(adjacentYIndex)).advanced_ai$sectionData().getRegions(regionifier);
+                        localRegions = ((ChunkSectionExtensions) chunk.getSection(adjacentYIndex)).advanced_ai_pathing$sectionData().getRegions(regionifier);
                         if (localRegions == null) {
                             return true;
                         }
-                    } else if (((ChunkSectionExtensions) chunk.getSection(adjacentYIndex)).advanced_ai$sectionData().getRegions(regionifier) == null) {
+                    } else if (((ChunkSectionExtensions) chunk.getSection(adjacentYIndex)).advanced_ai_pathing$sectionData().getRegions(regionifier) == null) {
                         return true;
                     }
                 }
@@ -75,7 +69,7 @@ public class ChunkRegionLinkJob implements AiJob {
 
     @Override
     public void apply(final Logger logger) {
-        if (regions==null || !world.isChunkLoaded(pos.getSectionX(), pos.getSectionZ())) {
+        if (regions == null || !world.isChunkLoaded(pos.getSectionX(), pos.getSectionZ())) {
             return;
         }
         final Chunk chunk = world.getChunk(pos.getSectionX(), pos.getSectionZ(), ChunkStatus.FULL, false);
@@ -83,8 +77,7 @@ public class ChunkRegionLinkJob implements AiJob {
         if (chunk == null || yIndex < 0 || yIndex >= world.countVerticalSections()) {
             return;
         }
-        ((ChunkSectionExtensions) chunk.getSection(yIndex)).advanced_ai$sectionData().put(regionifier, regions);
-        ((ServerWorldExtensions) world).advanced_ai$debug(new DebugSectionInfo<>(new RegionLinksDebugSection(Map.of(regionifier, regions)), pos, DebugSectionType.REGION_LINKS_DEBUG_TYPE));
+        ((ChunkSectionExtensions) chunk.getSection(yIndex)).advanced_ai_pathing$sectionData().put(regionifier, regions);
     }
 
     @Override

@@ -60,7 +60,7 @@ public abstract class AbstractShapeCache implements ShapeCache {
             return defRet;
         }
         final ChunkSection section = chunk.getSection(delegate.getSectionIndex(y));
-        final SectionData data = ((ChunkSectionExtensions) section).advanced_ai$sectionData();
+        final SectionData data = ((ChunkSectionExtensions) section).advanced_ai_pathing$sectionData();
         final LocationCacheSection<T> cacheSection = data.getLocationCache(classifier);
         if (cacheSection != null) {
             return cacheSection.get(x, y, z);

@@ -1,9 +1,8 @@
 package io.github.stuff_stuffs.advanced_ai.common.internal;
 
-import io.github.stuff_stuffs.advanced_ai.common.api.pathing.debug.DebugSectionType;
 import io.github.stuff_stuffs.advanced_ai.common.api.job.*;
-import io.github.stuff_stuffs.advanced_ai.common.api.pathing.job.*;
 import io.github.stuff_stuffs.advanced_ai.common.api.pathing.location_caching.LocationClassifier;
+import io.github.stuff_stuffs.advanced_ai.common.api.pathing.location_caching.PreLocationCacheSection;
 import io.github.stuff_stuffs.advanced_ai.common.api.pathing.region.ChunkRegionifier;
 import io.github.stuff_stuffs.advanced_ai.common.api.util.CollisionHelper;
 import io.github.stuff_stuffs.advanced_ai.common.api.util.ShapeCache;
@@ -12,6 +11,9 @@ import io.github.stuff_stuffs.advanced_ai.common.impl.job.ChunkRegionJob;
 import io.github.stuff_stuffs.advanced_ai.common.impl.job.ChunkRegionLinkJob;
 import io.github.stuff_stuffs.advanced_ai.common.impl.job.LocationCachingJob;
 import io.github.stuff_stuffs.advanced_ai.common.impl.job.executor.SingleThreadedJobExecutor;
+import io.github.stuff_stuffs.advanced_ai.common.impl.pathing.location_cache.LocationCacheSectionRegistry;
+import io.github.stuff_stuffs.advanced_ai.common.impl.pathing.location_cache.LocationCacheSubSection;
+import io.github.stuff_stuffs.advanced_ai.common.impl.pathing.location_cache.UniformLocationCacheSectionImpl;
 import io.github.stuff_stuffs.advanced_ai.common.internal.extensions.ChunkSectionExtensions;
 import io.github.stuff_stuffs.advanced_ai.common.internal.extensions.ServerExtensions;
 import io.github.stuff_stuffs.advanced_ai.common.internal.pathing.BasicChunkRegionifier;
@@ -38,7 +40,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class AdvancedAi implements ModInitializer {
+public class AdvancedAiPathing implements ModInitializer {
     public static final String MOD_ID = "advanced_ai";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
     public static final Logger JOB_LOGGER = LoggerFactory.getLogger(MOD_ID + ":job_executor");
@@ -69,7 +71,7 @@ public class AdvancedAi implements ModInitializer {
 
         @Override
         public UniverseInfo<CollisionHelper.FloorCollision> universeInfo() {
-            return AdvancedAi.FLOOR_COLLISION_INFO;
+            return AdvancedAiPathing.FLOOR_COLLISION_INFO;
         }
 
         @Override
@@ -87,12 +89,30 @@ public class AdvancedAi implements ModInitializer {
     @Override
     public void onInitialize() {
         RegistryEntryAddedCallback.event(LocationClassifier.REGISTRY).register((rawId, id, object) -> PROCESSED_LOCATION_CLASSIFIERS.put(object, new ProcessedLocationClassifier<>(object)));
-        ServerTickEvents.END_SERVER_TICK.register(server -> ((ServerExtensions) server).advanced_ai$executor().run(25));
+        ServerTickEvents.END_SERVER_TICK.register(server -> ((ServerExtensions) server).advanced_ai_pathing$executor().run(25));
         Registry.register(LocationClassifier.REGISTRY, id("basic"), BASIC);
         Registry.register(ChunkRegionifier.REGISTRY, id("basic"), BASIC_REGIONIFIER);
-        Registry.register(DebugSectionType.REGISTRY, id("location_cache"), DebugSectionType.LOCATION_CACHE_TYPE);
-        Registry.register(DebugSectionType.REGISTRY, id("regions"), DebugSectionType.REGION_DEBUG_TYPE);
-        Registry.register(DebugSectionType.REGISTRY, id("region_link"), DebugSectionType.REGION_LINKS_DEBUG_TYPE);
+        LocationCacheSectionRegistry.register(id("uniform"), new LocationCacheSectionRegistry.Factory() {
+            @Override
+            public <T> LocationCacheSubSection<T> create(final PreLocationCacheSection<T> section, final UniverseInfo<T> info) {
+                return new UniformLocationCacheSectionImpl<>(section.get(0));
+            }
+        }, new LocationCacheSectionRegistry.SizeEstimator() {
+            @Override
+            public <T> long estimateBytes(final PreLocationCacheSection<T> section, final UniverseInfo<T> info) {
+                int nonZeroCount = 0;
+                final int universeSize = info.size();
+                for (int i = 0; i < universeSize; i++) {
+                    if (section.count(i) != 0) {
+                        nonZeroCount++;
+                    }
+                }
+                if (nonZeroCount == 1) {
+                    return 1;
+                }
+                return Long.MAX_VALUE;
+            }
+        });
         AiJobExecutor.CREATION_EVENT.register(acceptor -> {
             acceptor.accept(new AbstractPrerequisiteAiJobHandler<>(512, ChunkRegionJob.class) {
                 @Override
@@ -112,7 +132,7 @@ public class AdvancedAi implements ModInitializer {
                     if (chunk == null || yIndex < 0 || yIndex >= world.countVerticalSections()) {
                         return null;
                     }
-                    if (((ChunkSectionExtensions) chunk.getSection(yIndex)).advanced_ai$sectionData().getLocationCache(job.regionifier.classifier()) == null) {
+                    if (((ChunkSectionExtensions) chunk.getSection(yIndex)).advanced_ai_pathing$sectionData().getLocationCache(job.regionifier.classifier()) == null) {
                         return new LocationCachingJob<>(pos, world, job.regionifier.classifier());
                     }
                     return null;
@@ -153,7 +173,7 @@ public class AdvancedAi implements ModInitializer {
                                 if (chunk == null) {
                                     continue;
                                 }
-                                if (((ChunkSectionExtensions) chunk.getSection(adjacentYIndex)).advanced_ai$sectionData().getRegions(job.regionifier) == null) {
+                                if (((ChunkSectionExtensions) chunk.getSection(adjacentYIndex)).advanced_ai_pathing$sectionData().getRegions(job.regionifier) == null) {
                                     addOngoing(key, futureHandle);
                                     return new ChunkRegionJob(adjacentPos, world, job.regionifier);
                                 }
@@ -165,7 +185,7 @@ public class AdvancedAi implements ModInitializer {
             });
         });
         if (FabricLoader.getInstance().isDevelopmentEnvironment()) {
-            AdvancedAiDebug.init();
+            AdvancedAiPathingDebug.init();
         }
     }
 

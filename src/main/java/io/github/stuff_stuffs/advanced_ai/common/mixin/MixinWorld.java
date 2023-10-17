@@ -16,7 +16,7 @@ public class MixinWorld {
     @Inject(method = "setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;II)Z", at = @At("RETURN"))
     private void updateHook(final BlockPos pos, final BlockState state, final int flags, final int maxUpdateDepth, final CallbackInfoReturnable<Boolean> cir) {
         if (((Object) this) instanceof ServerWorld && cir.getReturnValue()) {
-            ((ServerWorldExtensions) this).advanced_ai$invalidate(ChunkSectionPos.fromBlockPos(pos.asLong()));
+            ((ServerWorldExtensions) this).advanced_ai_pathing$invalidate(ChunkSectionPos.fromBlockPos(pos.asLong()));
         }
     }
 }
