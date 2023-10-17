@@ -2,7 +2,6 @@ package io.github.stuff_stuffs.advanced_ai.common.internal;
 
 import io.github.stuff_stuffs.advanced_ai.common.api.pathing.debug.DebugSectionType;
 import io.github.stuff_stuffs.advanced_ai.common.api.job.*;
-import io.github.stuff_stuffs.advanced_ai.common.api.pathing.job.*;
 import io.github.stuff_stuffs.advanced_ai.common.api.pathing.location_caching.LocationClassifier;
 import io.github.stuff_stuffs.advanced_ai.common.api.pathing.region.ChunkRegionifier;
 import io.github.stuff_stuffs.advanced_ai.common.api.util.CollisionHelper;
