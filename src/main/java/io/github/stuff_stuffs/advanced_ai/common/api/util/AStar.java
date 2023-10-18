@@ -1,5 +1,7 @@
-package io.github.stuff_stuffs.advanced_ai.common.internal.pathing;
+package io.github.stuff_stuffs.advanced_ai.common.api.util;
 
+import io.github.stuff_stuffs.advanced_ai.common.internal.pathing.NodeVisitedMap;
+import io.github.stuff_stuffs.advanced_ai.common.internal.pathing.PathingHeap;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Array;

@@ -21,7 +21,7 @@ public class LocationCacheSectionImpl<T> implements LocationCacheSection<T> {
     private static final int Z_LOWER_SHIFT = 0;
     private static final int Y_LOWER_SHIFT = 4 - LOWER_BITS;
     private static final int X_LOWER_SHIFT = 8 - (LOWER_BITS * 2);
-    private long[] modCounts;
+    private final long[] modCounts;
     private final LocationCacheSubSection<T>[] subSections;
 
     public LocationCacheSectionImpl(final long[] counts, final LocationClassifier<T> classifier, final ChunkSectionPos pos, final ShapeCache cache) {
@@ -46,11 +46,6 @@ public class LocationCacheSectionImpl<T> implements LocationCacheSection<T> {
     @Override
     public long[] modCounts() {
         return modCounts;
-    }
-
-    @Override
-    public void modCounts(final long[] modCounts) {
-        this.modCounts = modCounts;
     }
 
     @Override

@@ -12,17 +12,13 @@ base {
 }
 
 repositories {
-	maven {
-		name = 'Ladysnake Mods'
-		url = 'https://maven.ladysnake.org/releases'
-	}
 }
 
 loom {
     splitEnvironmentSourceSets()
 
 	mods {
-		"advanced_ai" {
+		"advanced_ai_pathing" {
 			sourceSet sourceSets.main
 			sourceSet sourceSets.client
 		}

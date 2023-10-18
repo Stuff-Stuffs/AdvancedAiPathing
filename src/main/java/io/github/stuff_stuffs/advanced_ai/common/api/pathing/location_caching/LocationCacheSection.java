@@ -3,8 +3,6 @@ package io.github.stuff_stuffs.advanced_ai.common.api.pathing.location_caching;
 public interface LocationCacheSection<T> {
     long[] modCounts();
 
-    void modCounts(long[] modCounts);
-
     T get(int index);
 
     default T get(final int x, final int y, final int z) {

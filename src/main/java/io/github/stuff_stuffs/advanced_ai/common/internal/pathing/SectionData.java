@@ -2,9 +2,6 @@ package io.github.stuff_stuffs.advanced_ai.common.internal.pathing;
 
 import io.github.stuff_stuffs.advanced_ai.common.api.pathing.location_caching.LocationCacheSection;
 import io.github.stuff_stuffs.advanced_ai.common.api.pathing.location_caching.LocationClassifier;
-import io.github.stuff_stuffs.advanced_ai.common.api.pathing.region.ChunkRegionifier;
-import io.github.stuff_stuffs.advanced_ai.common.api.pathing.region.ChunkSectionLinkedRegions;
-import io.github.stuff_stuffs.advanced_ai.common.api.pathing.region.ChunkSectionRegions;
 import io.github.stuff_stuffs.advanced_ai.common.api.util.CopyOnWriteMap;
 import org.jetbrains.annotations.Nullable;
 
@@ -17,26 +14,8 @@ public class SectionData {
         stale.remove(classifier);
     }
 
-    public void put(final ChunkRegionifier<?> regionifier, final ChunkSectionRegions regions) {
-        current.put(regionifier, regions);
-        stale.regions.remove(regionifier);
-    }
-
-    public void put(final ChunkRegionifier<?> regionifier, final ChunkSectionLinkedRegions regions) {
-        current.put(regionifier, regions);
-        stale.regions.remove(regionifier);
-    }
-
     public <T> @Nullable LocationCacheSection<T> getLocationCache(final LocationClassifier<T> classifier) {
         return current.get(classifier);
-    }
-
-    public @Nullable ChunkSectionRegions getRegions(final ChunkRegionifier<?> regionifier) {
-        return current.get(regionifier);
-    }
-
-    public @Nullable ChunkSectionLinkedRegions getLinks(final ChunkRegionifier<?> regionifier) {
-        return current.getLinks(regionifier);
     }
 
     public <T> @Nullable LocationCacheSection<T> getPossibleStale(final LocationClassifier<T> classifier) {
@@ -64,13 +43,9 @@ public class SectionData {
 
     private static final class State {
         private final CopyOnWriteMap<LocationClassifier<?>, LocationCacheSection<?>> sections = new CopyOnWriteMap<>();
-        private final CopyOnWriteMap<ChunkRegionifier<?>, ChunkSectionRegions> regions = new CopyOnWriteMap<>();
-        private final CopyOnWriteMap<ChunkRegionifier<?>, ChunkSectionLinkedRegions> links = new CopyOnWriteMap<>();
 
         private void clear() {
             sections.clear();
-            regions.clear();
-            links.clear();
         }
 
         public <T> @Nullable LocationCacheSection<T> get(final LocationClassifier<T> classifier) {
@@ -83,22 +58,6 @@ public class SectionData {
 
         public <T> @Nullable LocationCacheSection<T> remove(final LocationClassifier<T> classifier) {
             return (LocationCacheSection<T>) sections.remove(classifier);
-        }
-
-        public @Nullable ChunkSectionRegions get(final ChunkRegionifier<?> classifier) {
-            return regions.get(classifier);
-        }
-
-        public @Nullable ChunkSectionLinkedRegions getLinks(final ChunkRegionifier<?> classifier) {
-            return links.get(classifier);
-        }
-
-        public void put(final ChunkRegionifier<?> regionifier, final ChunkSectionRegions regions) {
-            this.regions.put(regionifier, regions);
-        }
-
-        public void put(final ChunkRegionifier<?> classifier, final ChunkSectionLinkedRegions regions) {
-            links.put(classifier, regions);
         }
     }
 }
