@@ -117,7 +117,21 @@ public class LocationCachingJob<T> implements AiJob {
                         final int baseY = k * 16 + bottomCoord;
                         final int baseZ = j * 16;
                         for (int l = 0; l < count; l++) {
-                            if (classifier.needsRebuild(p.getSectionX(), p.getSectionY(), p.getSectionZ(), p.getSectionX() + i, p.getSectionY() + k, p.getSectionZ() + j, baseX + LocationCacheSection.unpackX(coords[l]), baseY + LocationCacheSection.unpackY(coords[l]), baseZ + LocationCacheSection.unpackZ(coords[l]), cache)) {
+                            if (
+                                    classifier.needsRebuild(
+                                            p.getSectionX(),
+                                            p.getSectionY(),
+                                            p.getSectionZ(),
+                                            p.getSectionX() + i,
+                                            p.getSectionY() + k,
+                                            p.getSectionZ() + j,
+                                            baseX + LocationCacheSection.unpackX(coords[l]),
+                                            baseY + LocationCacheSection.unpackY(coords[l]),
+                                            baseZ + LocationCacheSection.unpackZ(coords[l]),
+                                            cache,
+                                            oldArr[l],
+                                            newArr[l])
+                            ) {
                                 return false;
                             }
                         }
