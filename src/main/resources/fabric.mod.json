@@ -9,22 +9,15 @@
   ],
   "contact": {
   },
-  "license": "CC0-1.0",
+  "license": "MIT",
   "environment": "*",
   "entrypoints": {
     "main": [
-      "io.github.stuff_stuffs.advanced_ai.common.internal.AdvancedAiPathing"
-    ],
-    "client": [
-      "io.github.stuff_stuffs.advanced_ai.client.internal.AdvancedAiPathingClient"
+      "io.github.stuff_stuffs.advanced_ai_pathing.common.internal.AdvancedAiPathing"
     ]
   },
   "mixins": [
-    "advanced_ai_pathing.mixins.json",
-    {
-      "config": "advanced_ai_pathing.client.mixins.json",
-      "environment": "client"
-    }
+    "advanced_ai_pathing.mixins.json"
   ],
   "depends": {
     "fabricloader": ">=0.14.21",
