@@ -1,7 +1,5 @@
 package io.github.stuff_stuffs.advanced_ai_pathing.common.internal;
 
-import io.github.stuff_stuffs.advanced_ai_pathing.common.api.job.AiJobExecutor;
-import io.github.stuff_stuffs.advanced_ai_pathing.common.api.job.AiJobHandler;
 import io.github.stuff_stuffs.advanced_ai_pathing.common.api.pathing.location_caching.PreLocationCacheSection;
 import io.github.stuff_stuffs.advanced_ai_pathing.common.api.util.UniverseInfo;
 import io.github.stuff_stuffs.advanced_ai_pathing.common.impl.job.executor.SingleThreadedJobExecutor;
@@ -15,9 +13,6 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class AdvancedAiPathing implements ModInitializer {
     public static final String MOD_ID = "advanced_ai";
@@ -60,8 +55,6 @@ public class AdvancedAiPathing implements ModInitializer {
     }
 
     public static RunnableAiJobExecutor createExecutor() {
-        final List<AiJobHandler> handlers = new ArrayList<>();
-        AiJobExecutor.CREATION_EVENT.invoker().addHandlers(handlers::add);
-        return new SingleThreadedJobExecutor(handlers, JOB_LOGGER, 512);
+        return new SingleThreadedJobExecutor(JOB_LOGGER, 512);
     }
 }

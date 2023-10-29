@@ -1,8 +1,5 @@
 package io.github.stuff_stuffs.advanced_ai_pathing.common.mixin;
 
-import io.github.stuff_stuffs.advanced_ai_pathing.common.api.job.AiJobExecutor;
-import io.github.stuff_stuffs.advanced_ai_pathing.common.api.job.AiServerWorld;
-import io.github.stuff_stuffs.advanced_ai_pathing.common.internal.extensions.ServerExtensions;
 import io.github.stuff_stuffs.advanced_ai_pathing.common.internal.extensions.ServerWorldExtensions;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
@@ -25,7 +22,7 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
 @Mixin(ServerWorld.class)
-public abstract class MixinServerWorld extends World implements ServerWorldExtensions, AiServerWorld {
+public abstract class MixinServerWorld extends World implements ServerWorldExtensions {
     @Override
     @Shadow
     public abstract MinecraftServer getServer();
@@ -45,10 +42,5 @@ public abstract class MixinServerWorld extends World implements ServerWorldExten
     private void invalidateChunks(final BooleanSupplier shouldKeepTicking, final CallbackInfo ci) {
         ServerWorldExtensions.purge(advanced_ai_pathing$invalidated, this);
         advanced_ai_pathing$invalidated.clear();
-    }
-
-    @Override
-    public AiJobExecutor advanced_ai_pathing$executor() {
-        return ((ServerExtensions) getServer()).advanced_ai_pathing$executor();
     }
 }

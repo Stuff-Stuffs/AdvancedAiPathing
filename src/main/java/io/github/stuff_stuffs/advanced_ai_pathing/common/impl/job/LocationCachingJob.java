@@ -1,6 +1,5 @@
 package io.github.stuff_stuffs.advanced_ai_pathing.common.impl.job;
 
-import io.github.stuff_stuffs.advanced_ai_pathing.common.api.job.AiJob;
 import io.github.stuff_stuffs.advanced_ai_pathing.common.api.pathing.location_caching.LocationCacheSection;
 import io.github.stuff_stuffs.advanced_ai_pathing.common.api.pathing.location_caching.LocationClassifier;
 import io.github.stuff_stuffs.advanced_ai_pathing.common.api.util.ShapeCache;
@@ -18,13 +17,11 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkSectionPos;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkStatus;
-import org.slf4j.Logger;
 
-public class LocationCachingJob<T> implements AiJob {
-    private final ChunkSectionPos pos;
+public class LocationCachingJob<T> {
+    public final ChunkSectionPos pos;
     private final ServerWorld world;
-    private final LocationClassifier<T> classifier;
-    private LocationCacheSection<T> section;
+    public final LocationClassifier<T> classifier;
 
     public LocationCachingJob(final ChunkSectionPos pos, final ServerWorld world, final LocationClassifier<T> classifier) {
         this.pos = pos;
@@ -32,42 +29,27 @@ public class LocationCachingJob<T> implements AiJob {
         this.classifier = classifier;
     }
 
-    @Override
-    public boolean run(final Logger logger) {
+    public void run() {
         if (!world.isChunkLoaded(pos.getSectionX(), pos.getSectionZ())) {
-            return true;
+            return;
         }
         final Chunk chunk = world.getChunk(pos.getSectionX(), pos.getSectionZ(), ChunkStatus.FULL, false);
         final int yIndex = world.sectionCoordToIndex(pos.getSectionY());
         if (chunk == null || yIndex < 0 || yIndex >= world.countVerticalSections()) {
-            return true;
+            return;
         }
         final int minX = pos.getMinX();
         final int minY = pos.getMinY();
         final int minZ = pos.getMinZ();
         final ShapeCache cache = ShapeCache.create(world, new BlockPos(minX - 16, minY - 16, minZ - 16), new BlockPos(minX + 31, minY + 31, minZ + 31), 2048);
         if (tryRebuild(pos, cache, classifier)) {
-            return true;
-        }
-        section = new LocationCacheSectionImpl<>(collectModCounts(pos, cache), classifier, pos, cache);
-        return true;
-    }
-
-    @Override
-    public void apply(final Logger logger) {
-        if (section == null || !world.isChunkLoaded(pos.getSectionX(), pos.getSectionZ())) {
             return;
         }
-        final Chunk chunk = world.getChunk(pos.getSectionX(), pos.getSectionZ(), ChunkStatus.FULL, false);
-        final int yIndex = world.sectionCoordToIndex(pos.getSectionY());
-        if (chunk == null || yIndex < 0 || yIndex >= world.countVerticalSections()) {
-            return;
-        }
+        LocationCacheSection<T> section = new LocationCacheSectionImpl<>(collectModCounts(pos, cache), classifier, pos, cache);
         ((ChunkSectionExtensions) chunk.getSection(yIndex)).advanced_ai_pathing$sectionData().put(classifier, section);
     }
 
-    @Override
-    public Object debugData() {
+    public String debugData() {
         return "LocationCachingJob{" + pos.getSectionX() + "," + pos.getSectionY() + "," + pos.getSectionZ() + "}" + "@" + LocationClassifier.REGISTRY.getId(classifier);
     }
 
